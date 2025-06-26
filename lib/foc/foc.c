@@ -10,7 +10,6 @@
 
 #include "algorithmlib/filter.h"
 #include "algorithmlib/pid.h"
-#include "algorithmlib/trajectory_planning.h"
 #include "lib/focutils/svm/svm.h"
 #include "lib/focutils/utils/deadtime_comp.h"
 #include "zephyr/device.h"
