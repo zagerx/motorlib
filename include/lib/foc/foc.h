@@ -7,12 +7,12 @@
 
 #include "zephyr/device.h"
 #include <lib/focutils/svm/svm.h>
-#include <algorithmlib/pid.h>
+#include <pid.h>
 #include <sys/types.h>
-#include <algorithmlib/filter.h>
+#include <filter.h>
 #include <lib/focutils/utils/deadtime_comp.h>
-#include <algorithmlib/s_posi_planning.h>
-#include <algorithmlib/s_trajectory_planning.h>
+#include <s_posi_planning.h>
+#include <s_trajectory_planning.h>
 enum FOC_DATA_INDEX{
     FOC_PARAM_D_PID = 0,
     FOC_PARAM_Q_PID,

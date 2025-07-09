@@ -12,8 +12,8 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-#include "algorithmlib/pid.h"
-#include "algorithmlib/s_trajectory_planning.h"
+#include "pid.h"
+#include "s_trajectory_planning.h"
 #include "zephyr/device.h"
 #include <drivers/currsmp.h>
 #include <drivers/feedback.h>
@@ -21,11 +21,11 @@
 #include <lib/bldcmotor/motor.h>
 #include <lib/bldcmotor/motor_internal.h>
 #include <lib/foc/foc.h> //TODO
-#include <statemachine/statemachine.h>
+#include <statemachine.h>
 #include <stdint.h>
 #include <zephyr/logging/log.h>
 #include "stm32h7xx_ll_gpio.h"
-#include <algorithmlib/s_posi_planning.h>
+#include <s_posi_planning.h>
 /* Module logging setup */
 LOG_MODULE_REGISTER(motor_mode, LOG_LEVEL_DBG);
 

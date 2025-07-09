@@ -1,7 +1,7 @@
 #ifndef __MOTOR__H
 #define __MOTOR__H
 #include "zephyr/device.h"
-#include <statemachine/statemachine.h>
+#include <statemachine.h>
 
 
 struct motor_config {

@@ -12,7 +12,7 @@
  */
 
 /* System includes */
-#include "algorithmlib/pid.h"
+#include "pid.h"
 #include "stm32h723xx.h"
 #include "stm32h7xx_ll_gpio.h"
 
@@ -28,7 +28,7 @@
 #include <drivers/currsmp.h>
 #include <drivers/pwm.h>
 #include <drivers/feedback.h>
-#include <statemachine/statemachine.h>
+#include <statemachine.h>
 
 /* Device tree compatibility string */
 #define DT_DRV_COMPAT motor_bldc

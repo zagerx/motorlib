@@ -10,9 +10,9 @@
  * Copyright (c) 2023 Your Company
  * SPDX-License-Identifier: Apache-2.0
   */
-  #include "algorithmlib/pid.h"
+  #include "pid.h"
   #include "zephyr/device.h"
-  #include <statemachine/statemachine.h>
+  #include <statemachine.h>
    #include <lib/bldcmotor/motor.h>
    #include <lib/foc/foc.h>//TODO
    #include <drivers/currsmp.h>

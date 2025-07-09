@@ -1,4 +1,4 @@
-#include "algorithmlib/pid.h"
+#include "pid.h"
 #include "zephyr/device.h"
 #include <drivers/currsmp.h>
 #include <drivers/feedback.h>
@@ -6,7 +6,7 @@
 #include <lib/bldcmotor/motor.h>
 #include <lib/bldcmotor/motor_internal.h>
 #include <lib/foc/foc.h> //TODO
-#include <statemachine/statemachine.h>
+#include <statemachine.h>
 #include <stdint.h>
 #include <zephyr/logging/log.h>
 #include "stm32h7xx_ll_gpio.h"
