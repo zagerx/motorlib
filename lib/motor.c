@@ -169,7 +169,12 @@ void motor_set_target(const struct device *motor, float target)
 		foc_write_data(devfoc, FOC_PARAM_POSI_PLANNING, (float *)&target);
 	}
 }
-
+void motor_set_vol(const struct device *motor, float *bus_vol)
+{
+	const struct motor_config *mcfg = motor->config;
+	const struct device *devfoc = mcfg->foc_dev;
+	foc_write_data(devfoc, FOC_PARAM_BUSVOL, bus_vol);
+}
 float motor_get_curposi(const struct device *motor)
 {
 	const struct motor_config *mcfg = motor->config;

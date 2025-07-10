@@ -139,8 +139,6 @@ fsm_rt_t motor_speed_control_mode(fsm_cb_t *obj)
 	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
 	struct foc_data *f_data = foc->data;
 
-	float bus_vol = currsmp_get_busvol();
-	foc_write_data(foc, FOC_PARAM_BUSVOL, &bus_vol);
 	statemachine_updatestatus(obj, obj->sig);
 	switch (obj->chState) {
 	case ENTER:
@@ -206,7 +204,16 @@ fsm_rt_t motor_speed_control_mode(fsm_cb_t *obj)
 		motor_set_threephase_disable(motor);
 		obj->chState = MOTOR_STATE_IDLE;
 		break;
-
+	case MOTOR_STATE_FAULT:
+		m_data->statue = MOTOR_STATE_FAULT;
+		f_data->iq_ref = 0.0f;
+		f_data->speed_ref = 0.0f;
+		pid_reset(&(f_data->speed_pid));
+		pid_reset(&(f_data->id_pid));
+		pid_reset(&(f_data->iq_pid));
+		motor_set_threephase_disable(motor);
+		motor_set_threephase_disable(motor);
+		break;
 	case EXIT:
 		LOG_INF("Exit speed mode");
 		motor_set_threephase_disable(motor);
@@ -319,6 +326,7 @@ fsm_rt_t motor_position_control_mode(fsm_cb_t *obj)
 		obj->chState = MOTOR_STATE_IDLE;
 		break;
 	case MOTOR_STATE_FAULT:
+		m_data->statue = MOTOR_STATE_FAULT;
 		motor_set_threephase_disable(motor);
 		break;
 	case EXIT:
