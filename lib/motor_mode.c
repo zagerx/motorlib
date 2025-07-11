@@ -52,7 +52,7 @@ fsm_rt_t motor_torque_control_mode(fsm_cb_t *obj)
 
 	LL_GPIO_ResetOutputPin(GPIOE, GPIO_PIN_1);
 
-	foc_write_data(foc, FOC_PARAM_BUSVOL, &bus_vol);
+	foc_update_parameter(foc, FOC_PARAM_BUSVOL, &bus_vol);
 
 	statemachine_updatestatus(obj, obj->sig);
 

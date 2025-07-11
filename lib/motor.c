@@ -161,19 +161,19 @@ void motor_set_target(const struct device *motor, float target)
 	const struct motor_config *mcfg = motor->config;
 	const struct device *devfoc = mcfg->foc_dev;
 	if (mdata->mode == MOTOR_MODE_SPEED) {
-		foc_write_data(devfoc, FOC_PARAM_SPEED_REF, (float *)&target);
+		foc_update_parameter(devfoc, FOC_PARAM_SPEED_REF, (float *)&target);
 	} else if (mdata->mode == MOTOR_MODE_TORQUE) {
-		foc_write_data(devfoc, FOC_PARAM_DQ_REF, (float *)&target);
+		foc_update_parameter(devfoc, FOC_PARAM_DQ_REF, (float *)&target);
 	} else if (mdata->mode == MOTOR_MODE_POSI) {
-		// foc_write_data(devfoc, FOC_PARAM_POSI_REF,(float *)&target);
-		foc_write_data(devfoc, FOC_PARAM_POSI_PLANNING, (float *)&target);
+		// foc_update_parameter(devfoc, FOC_PARAM_POSI_REF,(float *)&target);
+		foc_update_parameter(devfoc, FOC_PARAM_POSI_PLANNING, (float *)&target);
 	}
 }
 void motor_set_vol(const struct device *motor, float *bus_vol)
 {
 	const struct motor_config *mcfg = motor->config;
 	const struct device *devfoc = mcfg->foc_dev;
-	foc_write_data(devfoc, FOC_PARAM_BUSVOL, bus_vol);
+	foc_update_parameter(devfoc, FOC_PARAM_BUSVOL, bus_vol);
 }
 float motor_get_curposi(const struct device *motor)
 {
