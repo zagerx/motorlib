@@ -77,7 +77,9 @@ static inline void currsmp_get_bus_vol_curr(const struct device *dev, float *bus
 					    float *bus_curr)
 {
 	const struct currsmp_driver_api *api = dev->api;
-	api->get_bus_volcurr(dev, bus_vol, bus_curr);
+	if (api->get_bus_volcurr) {
+		api->get_bus_volcurr(dev, bus_vol, bus_curr);
+	}
 }
 
 float currsmp_get_busvol(void);

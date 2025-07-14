@@ -57,6 +57,7 @@ void _write(const struct device *dev, int16_t flag, float *input)
 	} break;
 	case FOC_PARAM_BUSVOL: {
 		data->bus_vol = input[0];
+		data->bus_curr = input[1];
 	} break;
 	}
 }

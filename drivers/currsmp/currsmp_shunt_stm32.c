@@ -15,7 +15,7 @@
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <stm32h7xx_ll_gpio.h>
 #include <drivers/currsmp.h>
-#include <algorithmlib/filter.h>
+#include <filter.h>
 LOG_MODULE_REGISTER(currsmp_shunt_stm32, LOG_LEVEL_DBG);
 #define DT_DRV_COMPAT st_stm32_currsmp_shunt
 
@@ -126,17 +126,33 @@ static void currsmp_shunt_stm32_get_currents(const struct device *dev, struct cu
 static void currsmp_shunt_stm32_get_bus_vol_curr(const struct device *dev, float *bus_vol,
 						 float *bus_curr)
 {
+	const struct currsmp_shunt_stm32_config *cfg = dev->config;
+	if (cfg->adc != ADC1) {
+		return;
+	}
+	uint32_t count = 0;
 	LL_ADC_REG_StartConversion(ADC1);
-	while (!LL_ADC_IsActiveFlag_EOC(ADC1))
-		;
-	uint32_t ch14_value = LL_ADC_REG_ReadConversionData16(ADC1);
-	*bus_vol = ch14_value * 0.01632f; // (3.3f/4096*ch14_value)*(100.0f/(104.7f));
+	while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {
+		if (count++ > 65535) {
+			count = 0;
+			break;
+		}
+	}
+	static volatile uint32_t ch14_value;
+	ch14_value = LL_ADC_REG_ReadConversionData16(ADC1);
+	*bus_vol = ch14_value * 0.01632f;
 
-	LL_ADC_REG_StartConversion(ADC2);
-	while (!LL_ADC_IsActiveFlag_EOC(ADC2))
-		;
-	uint32_t ch4_value = LL_ADC_REG_ReadConversionData16(ADC2);
-	*bus_curr = ch4_value * 0.01632f; // (3.3f/4096*ch14_value)*(100.0f/(104.7f));
+	while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {
+		if (count++ > 65535) {
+			count = 0;
+			break;
+		}
+	}
+	static volatile uint32_t ch4_value;
+	ch4_value = LL_ADC_REG_ReadConversionData16(ADC1);
+	LL_ADC_REG_StopConversion(ADC1);
+	*bus_curr = ch4_value * 0.0402f; // (3.3f/4096*ch14_value)*(100.0f/(104.7f));
+	return;
 }
 
 /** @brief STM32 Shunt Current Sampling Driver API. */
@@ -182,7 +198,7 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 	ADC_REG_InitStruct.TriggerSource = LL_ADC_REG_TRIG_SOFTWARE;
 	ADC_REG_InitStruct.SequencerLength = LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS;
 	ADC_REG_InitStruct.SequencerDiscont = DISABLE;
-	ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_CONTINUOUS;
+	ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
 	ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
 	LL_ADC_REG_Init(cfg->adc, &ADC_REG_InitStruct);
 
@@ -248,11 +264,11 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_16); /* U1----TP1805 */
 		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_17); /* V1----TP1808 */
 	} else {
-		LL_ADC_REG_SetSequencerRanks(cfg->adc, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
-		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_4,
+		LL_ADC_REG_SetSequencerRanks(cfg->adc, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_18);
+		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_18,
 					      LL_ADC_SAMPLINGTIME_1CYCLE_5);
-		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_4, LL_ADC_SINGLE_ENDED);
-		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_4);
+		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_18, LL_ADC_SINGLE_ENDED);
+		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_18);
 
 		LL_ADC_INJ_SetSequencerRanks(cfg->adc, LL_ADC_INJ_RANK_1, LL_ADC_CHANNEL_5);
 		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_5,
@@ -307,31 +323,6 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 	moving_avg_init(data->chc_filter, NULL, 0);
 
 	return 0;
-}
-
-float currsmp_get_busvol(void)
-{
-	uint32_t count = 0;
-	LL_ADC_REG_StartConversion(ADC1);
-	while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {
-		if (count++ > 65535) {
-			count = 0;
-			break;
-		}
-	}
-	static volatile uint32_t ch14_value;
-	ch14_value = LL_ADC_REG_ReadConversionData16(ADC1);
-
-	while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {
-		if (count++ > 65535) {
-			count = 0;
-			break;
-		}
-	}
-	static volatile uint32_t ch4_value;
-	ch4_value = LL_ADC_REG_ReadConversionData16(ADC1);
-	LL_ADC_REG_StopConversion(ADC1);
-	return ch14_value * 0.01632f; // (3.3f/4096*ch14_value)*(100.0f/(104.7f));
 }
 
 /** @internal Helper macro to define the first instance with a specific IRQn. */

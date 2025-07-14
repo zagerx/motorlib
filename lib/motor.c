@@ -185,9 +185,9 @@ float motor_get_curposi(const struct device *motor)
 
 void motor_getbus_vol_curr(const struct device *motor, float *bus_vol, float *bus_curr)
 {
-	const struct motor_config *mcfg = motor->config;
-
-	currsmp_get_bus_vol_curr(mcfg->currsmp, bus_vol, bus_curr);
+	struct motor_config *cfg = (struct motor_config *)motor->config;
+	struct device *currsmp = (struct device *)cfg->currsmp;
+	currsmp_get_bus_vol_curr(currsmp, bus_vol, bus_curr);
 }
 /**
  * @brief Motor device initialization

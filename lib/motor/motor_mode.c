@@ -48,11 +48,11 @@ fsm_rt_t motor_torque_control_mode(fsm_cb_t *obj)
 	struct foc_data *data = foc->data;
 	LL_GPIO_SetOutputPin(GPIOE, GPIO_PIN_1);
 
-	float bus_vol = currsmp_get_busvol();
+	// float bus_vol = currsmp_get_busvol();
 
 	LL_GPIO_ResetOutputPin(GPIOE, GPIO_PIN_1);
 
-	foc_update_parameter(foc, FOC_PARAM_BUSVOL, &bus_vol);
+	// foc_update_parameter(foc, FOC_PARAM_BUSVOL, &bus_vol);
 
 	statemachine_updatestatus(obj, obj->sig);
 
