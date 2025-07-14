@@ -4,18 +4,18 @@
  */
 
 #include "stm32h7xx_ll_adc.h"
-#include <filter.h>
-#include <drivers/currsmp.h>
 #include <math.h>
 #include <stdint.h>
-#include <stm32h7xx_ll_gpio.h>
 #include <sys/_intsup.h>
+#include <zephyr/logging/log.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/adc.h>
-#include <zephyr/drivers/clock_control/stm32_clock_control.h>
-#include <zephyr/drivers/pinctrl.h>
 #include <zephyr/irq.h>
-#include <zephyr/logging/log.h>
+#include <zephyr/drivers/pinctrl.h>
+#include <zephyr/drivers/clock_control/stm32_clock_control.h>
+#include <stm32h7xx_ll_gpio.h>
+#include <drivers/currsmp.h>
+#include <algorithmlib/filter.h>
 LOG_MODULE_REGISTER(currsmp_shunt_stm32, LOG_LEVEL_DBG);
 #define DT_DRV_COMPAT st_stm32_currsmp_shunt
 
@@ -69,10 +69,12 @@ static void inline adc_stm32_isr(const struct device *dev)
 	const struct currsmp_shunt_stm32_config *cfg = dev->config;
 	struct currsmp_shunt_stm32_data *data = dev->data;
 	if (LL_ADC_IsActiveFlag_JEOS(cfg->adc)) {
-		LL_ADC_ClearFlag_JEOS(cfg->adc);
+
 		if (data->regulation_cb) {
 			data->regulation_cb(data->regulation_ctx);
 		}
+
+		LL_ADC_ClearFlag_JEOS(cfg->adc);
 	}
 }
 
@@ -121,20 +123,19 @@ static void currsmp_shunt_stm32_get_currents(const struct device *dev, struct cu
 	curr->i_b = ((int16_t)(data->adc_channl_b - 2048)) * scale;
 	curr->i_c = ((int16_t)(data->adc_channl_c - 2048)) * scale;
 }
-void currsmp_shunt_stm32_get_bus_vol_curr(const struct device *dev, float *bus_vol, float *bus_curr)
+static void currsmp_shunt_stm32_get_bus_vol_curr(const struct device *dev, float *bus_vol,
+						 float *bus_curr)
 {
 	LL_ADC_REG_StartConversion(ADC1);
 	while (!LL_ADC_IsActiveFlag_EOC(ADC1))
 		;
-	static uint32_t ch14_value;
-	ch14_value = LL_ADC_REG_ReadConversionData16(ADC1);
+	uint32_t ch14_value = LL_ADC_REG_ReadConversionData16(ADC1);
 	*bus_vol = ch14_value * 0.01632f; // (3.3f/4096*ch14_value)*(100.0f/(104.7f));
 
 	LL_ADC_REG_StartConversion(ADC2);
 	while (!LL_ADC_IsActiveFlag_EOC(ADC2))
 		;
-	static uint32_t ch4_value;
-	ch4_value = LL_ADC_REG_ReadConversionData16(ADC2);
+	uint32_t ch4_value = LL_ADC_REG_ReadConversionData16(ADC2);
 	*bus_curr = ch4_value * 0.01632f; // (3.3f/4096*ch14_value)*(100.0f/(104.7f));
 }
 
@@ -173,14 +174,16 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 	LL_ADC_INJ_InitTypeDef ADC_INJ_InitStruct = {0};
 
 	LL_ADC_SetOverSamplingScope(cfg->adc, LL_ADC_OVS_DISABLE);
+
 	ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;
 	ADC_InitStruct.LowPowerMode = LL_ADC_LP_MODE_NONE;
 	LL_ADC_Init(cfg->adc, &ADC_InitStruct);
+
 	ADC_REG_InitStruct.TriggerSource = LL_ADC_REG_TRIG_SOFTWARE;
-	ADC_REG_InitStruct.SequencerLength = LL_ADC_REG_SEQ_SCAN_DISABLE;
+	ADC_REG_InitStruct.SequencerLength = LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS;
 	ADC_REG_InitStruct.SequencerDiscont = DISABLE;
 	ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_CONTINUOUS;
-	ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_OVERWRITTEN;
+	ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
 	LL_ADC_REG_Init(cfg->adc, &ADC_REG_InitStruct);
 
 	if (!cfg->slave_mode_flag) {
@@ -188,6 +191,7 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 		ADC_CommonInitStruct.Multimode = LL_ADC_MULTI_DUAL_INJ_SIMULT;
 		ADC_CommonInitStruct.MultiTwoSamplingDelay = LL_ADC_MULTI_TWOSMP_DELAY_2CYCLES_5;
 		LL_ADC_CommonInit(__LL_ADC_COMMON_INSTANCE(cfg->adc), &ADC_CommonInitStruct);
+
 		ADC_INJ_InitStruct.TriggerSource = LL_ADC_INJ_TRIG_EXT_TIM1_CH4;
 		ADC_INJ_InitStruct.SequencerLength = LL_ADC_INJ_SEQ_SCAN_ENABLE_3RANKS;
 		ADC_INJ_InitStruct.SequencerDiscont = LL_ADC_INJ_SEQ_DISCONT_DISABLE;
@@ -219,6 +223,12 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_15, LL_ADC_SINGLE_ENDED);
 		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_15);
 
+		LL_ADC_REG_SetSequencerRanks(cfg->adc, LL_ADC_REG_RANK_2, LL_ADC_CHANNEL_4);
+		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_4,
+					      LL_ADC_SAMPLINGTIME_1CYCLE_5);
+		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_4, LL_ADC_SINGLE_ENDED);
+		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_4);
+
 		LL_ADC_INJ_SetSequencerRanks(cfg->adc, LL_ADC_INJ_RANK_1, LL_ADC_CHANNEL_14);
 		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_14,
 					      LL_ADC_SAMPLINGTIME_1CYCLE_5);
@@ -234,20 +244,15 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 					      LL_ADC_SAMPLINGTIME_1CYCLE_5);
 		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_17, LL_ADC_SINGLE_ENDED);
 
-		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_14);
-		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_16);
-		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_17);
+		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_14); /* W1----TP1809 */
+		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_16); /* U1----TP1805 */
+		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_17); /* V1----TP1808 */
 	} else {
 		LL_ADC_REG_SetSequencerRanks(cfg->adc, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_4);
 		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_4,
 					      LL_ADC_SAMPLINGTIME_1CYCLE_5);
 		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_4, LL_ADC_SINGLE_ENDED);
 		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_4);
-
-		LL_ADC_INJ_SetSequencerRanks(cfg->adc, LL_ADC_INJ_RANK_3, LL_ADC_CHANNEL_9);
-		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_9,
-					      LL_ADC_SAMPLINGTIME_1CYCLE_5);
-		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_9, LL_ADC_SINGLE_ENDED);
 
 		LL_ADC_INJ_SetSequencerRanks(cfg->adc, LL_ADC_INJ_RANK_1, LL_ADC_CHANNEL_5);
 		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_5,
@@ -259,9 +264,14 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 					      LL_ADC_SAMPLINGTIME_1CYCLE_5);
 		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_8, LL_ADC_SINGLE_ENDED);
 
-		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_8);
-		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_9);
-		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_5);
+		LL_ADC_INJ_SetSequencerRanks(cfg->adc, LL_ADC_INJ_RANK_3, LL_ADC_CHANNEL_9);
+		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_9,
+					      LL_ADC_SAMPLINGTIME_1CYCLE_5);
+		LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_9, LL_ADC_SINGLE_ENDED);
+
+		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_5); /* W2----TP1826 */
+		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_8); /* U2----TP1821 */
+		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_9); /* V2----TP1824 */
 	}
 
 	if (!cfg->slave_mode_flag) {
@@ -298,14 +308,32 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 
 	return 0;
 }
+
 float currsmp_get_busvol(void)
 {
+	uint32_t count = 0;
 	LL_ADC_REG_StartConversion(ADC1);
-	while (!LL_ADC_IsActiveFlag_EOC(ADC1))
-		;
-	uint32_t ch14_value = LL_ADC_REG_ReadConversionData16(ADC1);
+	while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {
+		if (count++ > 65535) {
+			count = 0;
+			break;
+		}
+	}
+	static volatile uint32_t ch14_value;
+	ch14_value = LL_ADC_REG_ReadConversionData16(ADC1);
+
+	while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {
+		if (count++ > 65535) {
+			count = 0;
+			break;
+		}
+	}
+	static volatile uint32_t ch4_value;
+	ch4_value = LL_ADC_REG_ReadConversionData16(ADC1);
+	LL_ADC_REG_StopConversion(ADC1);
 	return ch14_value * 0.01632f; // (3.3f/4096*ch14_value)*(100.0f/(104.7f));
 }
+
 /** @internal Helper macro to define the first instance with a specific IRQn. */
 #define FIRST_WITH_IRQN_INTERNAL(n, irqn)                                                          \
 	COND_CODE_1(IS_EQ(irqn, DT_IRQN(DT_INST_PARENT(n))), (n, ), (EMPTY, ))
@@ -343,14 +371,12 @@ float currsmp_get_busvol(void)
 /** @internal Generate device instances. */
 DT_INST_FOREACH_STATUS_OKAY(GENERATE_ISR)
 
-/** @internal Helper macro to define the IRQ function for a specific instance.
- */
+/** @internal Helper macro to define the IRQ function for a specific instance. */
 #define CURRSMP_SHUNT_STM32_IRQ_FUNC(n)                                                            \
 	.irq_cfg_func =                                                                            \
 		COND_CODE_1(IS_EQ(n, FIRST_WITH_IRQN(n)), (UTIL_CAT(ISR_FUNC(n), _init)), (NULL)),
 
-/** @brief Device instance definition for STM32 shunt current sampling driver.
- */
+/** @brief Device instance definition for STM32 shunt current sampling driver. */
 #define CURRSMP_SHUNT_STM32_CURRSMP_SHUNT_INIT(n)                                                  \
                                                                                                    \
 	PINCTRL_DT_INST_DEFINE(n);                                                                 \
