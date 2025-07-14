@@ -58,6 +58,7 @@ struct currsmp_shunt_stm32_data {
 	moving_avg_t *cha_filter;
 	moving_avg_t *chb_filter;
 	moving_avg_t *chc_filter;
+	moving_avg_t *bus_curr_filter;
 };
 
 /** @brief ADC interrupt service routine.
@@ -151,7 +152,11 @@ static void currsmp_shunt_stm32_get_bus_vol_curr(const struct device *dev, float
 	static volatile uint32_t ch4_value;
 	ch4_value = LL_ADC_REG_ReadConversionData16(ADC1);
 	LL_ADC_REG_StopConversion(ADC1);
-	*bus_curr = ch4_value * 0.0402f; // (3.3f/4096*ch14_value)*(100.0f/(104.7f));
+	static int16_t temp;
+	const struct currsmp_shunt_stm32_data *data = dev->data;
+
+	temp = moving_avg_update((data->bus_curr_filter), ch4_value);
+	*bus_curr = temp * 0.0402f;
 	return;
 }
 
@@ -321,6 +326,7 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 	moving_avg_init(data->cha_filter, NULL, 0);
 	moving_avg_init(data->chb_filter, NULL, 0);
 	moving_avg_init(data->chc_filter, NULL, 0);
+	moving_avg_init(data->bus_curr_filter, NULL, 0);
 
 	return 0;
 }
@@ -385,11 +391,14 @@ DT_INST_FOREACH_STATUS_OKAY(GENERATE_ISR)
 	static moving_avg_t filter_chc_##n = {.buffer = (buffer_chc_##n), .size = 32};             \
 	static int16_t buffer_average_##n[32];                                                     \
 	static moving_avg_t filter_average_##n = {.buffer = (buffer_average_##n), .size = 32};     \
+	static int16_t buffer_bus_curr_##n[100];                                                   \
+	static moving_avg_t filter_bus_curr_##n = {.buffer = (buffer_bus_curr_##n), .size = 100};  \
 	static struct currsmp_shunt_stm32_data currsmp_shunt_stm32_data_##n = {                    \
 		.cha_filter = &(filter_cha_##n),                                                   \
 		.chb_filter = &(filter_chb_##n),                                                   \
 		.chc_filter = &(filter_chc_##n),                                                   \
 		.average_filter = &(filter_average_##n),                                           \
+		.bus_curr_filter = &(filter_bus_curr_##n),                                         \
 	};                                                                                         \
                                                                                                    \
 	DEVICE_DT_INST_DEFINE(n, &currsmp_shunt_stm32_init, NULL, &currsmp_shunt_stm32_data_##n,   \
