@@ -218,12 +218,14 @@ static int motor_init(const struct device *dev)
 
 #define MOTOR_INIT(n)                                                                              \
 	fsm_cb_t fsm_##n;                                                                          \
+	fmm_t bus_vol_curr_fault_##n;                                                              \
 	static const struct motor_config motor_cfg_##n = {                                         \
 		.foc_dev = DEVICE_DT_GET(DT_INST_PHANDLE(n, control_algorithm)),                   \
 		.pwm = DEVICE_DT_GET(DT_INST_PHANDLE(n, pwm)),                                     \
 		.currsmp = DEVICE_DT_GET(DT_INST_PHANDLE(n, currsmp)),                             \
 		.feedback = DEVICE_DT_GET(DT_INST_PHANDLE(n, feedback)),                           \
 		.fsm = &fsm_##n,                                                                   \
+		.fault = &bus_vol_curr_fault_##n,                                                  \
 	};                                                                                         \
 	static struct motor_data motor_data_##n;                                                   \
 	DEVICE_DT_INST_DEFINE(n, motor_init, NULL, &motor_data_##n, &motor_cfg_##n, POST_KERNEL,   \
