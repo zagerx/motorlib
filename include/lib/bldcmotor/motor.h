@@ -46,6 +46,7 @@ enum motor_cmd {
 	MOTOR_CMD_SET_START,
 	MOTOR_CMD_SET_PIDPARAM,
 	MOTOR_CMD_SET_VOLFAULT,
+	MOTOR_CMD_SET_IDLE
 };
 struct motor_data {
 	enum motor_mode mode;

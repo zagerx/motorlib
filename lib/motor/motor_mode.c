@@ -107,7 +107,10 @@ fsm_rt_t motor_torque_control_mode(fsm_cb_t *obj)
 		motor_set_threephase_disable(motor);
 		obj->chState = MOTOR_STATE_IDLE;
 		break;
-
+	case MOTOR_STATE_FAULT:
+		m_data->statue = MOTOR_STATE_FAULT;
+		motor_set_threephase_disable(motor);
+		break;
 	case EXIT:
 		LOG_INF("Exit loop mode");
 		motor_set_threephase_disable(motor);
@@ -202,16 +205,9 @@ fsm_rt_t motor_speed_control_mode(fsm_cb_t *obj)
 		pid_reset(&(f_data->id_pid));
 		pid_reset(&(f_data->iq_pid));
 		motor_set_threephase_disable(motor);
-		obj->chState = MOTOR_STATE_IDLE;
 		break;
 	case MOTOR_STATE_FAULT:
 		m_data->statue = MOTOR_STATE_FAULT;
-		f_data->iq_ref = 0.0f;
-		f_data->speed_ref = 0.0f;
-		pid_reset(&(f_data->speed_pid));
-		pid_reset(&(f_data->id_pid));
-		pid_reset(&(f_data->iq_pid));
-		motor_set_threephase_disable(motor);
 		motor_set_threephase_disable(motor);
 		break;
 	case EXIT:
@@ -323,7 +319,6 @@ fsm_rt_t motor_position_control_mode(fsm_cb_t *obj)
 		pid_reset(&(f_data->id_pid));
 		pid_reset(&(f_data->iq_pid));
 		motor_set_threephase_disable(motor);
-		obj->chState = MOTOR_STATE_IDLE;
 		break;
 	case MOTOR_STATE_FAULT:
 		m_data->statue = MOTOR_STATE_FAULT;

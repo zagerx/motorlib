@@ -56,6 +56,7 @@ static struct state_transition_map motor_state_map[] = {
 	{.signal = MOTOR_CMD_SET_SPEED, .target_state = MOTOR_STATE_CLOSED_LOOP},
 	{.signal = MOTOR_CMD_SET_START, .target_state = MOTOR_STATE_CLOSED_LOOP},
 	{.signal = MOTOR_CMD_SET_VOLFAULT, .target_state = MOTOR_STATE_FAULT},
+	{.signal = MOTOR_CMD_SET_IDLE, .target_state = MOTOR_STATE_IDLE},
 
 };
 
