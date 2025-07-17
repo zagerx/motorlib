@@ -9,7 +9,7 @@ struct motor_config {
 	const struct device *pwm;
 	const struct device *feedback;
 	fsm_cb_t *fsm;
-	fmm_t *fault;
+	fmm_t *fault[2];
 };
 
 /**
