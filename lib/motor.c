@@ -183,7 +183,24 @@ float motor_get_curposi(const struct device *motor)
 	const struct foc_data *fdata = devfoc->data;
 	return fdata->pos_real;
 }
-
+void motor_clear_realodom(const struct device *motor, float odom)
+{
+	const struct motor_config *mcfg = motor->config;
+	const struct device *feedback = mcfg->feedback;
+	feedback_set_pos(feedback);
+}
+void motor_set_targetPosi(const struct device *motor, float target, float start)
+{
+	const struct motor_data *mdata = motor->data;
+	const struct motor_config *mcfg = motor->config;
+	const struct device *devfoc = mcfg->foc_dev;
+	float input[2];
+	if (mdata->mode == MOTOR_MODE_POSI) {
+		input[0] = target;
+		input[1] = start;
+		foc_update_parameter(devfoc, FOC_PARAM_POSI_PLANNING, (float *)input);
+	}
+}
 void motor_getbus_vol_curr(const struct device *motor, float *bus_vol, float *bus_curr)
 {
 	struct motor_config *cfg = (struct motor_config *)motor->config;

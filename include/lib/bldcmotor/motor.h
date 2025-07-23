@@ -64,5 +64,7 @@ void motor_set_state(const struct device *motor, enum motor_cmd sig);
 void motor_set_target(const struct device *motor, float target);
 float motor_get_curposi(const struct device *motor);
 void motor_getbus_vol_curr(const struct device *motor, float *bus_vol, float *bus_curr);
+void motor_set_targetPosi(const struct device *motor, float target, float start);
+void motor_clear_realodom(const struct device *motor, float odom);
 
 #endif

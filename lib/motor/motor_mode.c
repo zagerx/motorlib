@@ -159,11 +159,11 @@ fsm_rt_t motor_speed_control_mode(fsm_cb_t *obj)
 		/*-----------INIT-------------*/
 	case MOTOR_STATE_INIT:
 		m_data->statue = MOTOR_STATE_INIT;
-		LOG_INF("motor status: MOTOR_STATE_INIT");
+		// LOG_INF("motor status: MOTOR_STATE_INIT");
 		motor_set_threephase_enable(motor);
 		f_data->speed_ref = 0.0f;
 		obj->chState = MOTOR_STATE_READY;
-	// break;
+		// break;
 	case MOTOR_STATE_READY:
 		m_data->statue = MOTOR_STATE_READY;
 		break;
@@ -179,7 +179,7 @@ fsm_rt_t motor_speed_control_mode(fsm_cb_t *obj)
 		/*-------PARAM UPDATE----------*/
 	case MOTOR_STATE_PARAM_UPDATE:
 		m_data->statue = MOTOR_STATE_PARAM_UPDATE;
-		LOG_INF("motor status: MOTOR_STATE_PARAM_UPDATE");
+		// LOG_INF("motor status: MOTOR_STATE_PARAM_UPDATE");
 		motor_set_threephase_disable(motor);
 		float kp, ki;
 		float *param = (float *)obj->p2;
@@ -198,7 +198,7 @@ fsm_rt_t motor_speed_control_mode(fsm_cb_t *obj)
 		/*-----------STOP-------------*/
 	case MOTOR_STATE_STOP:
 		m_data->statue = MOTOR_STATE_STOP;
-		LOG_INF("motor status: MOTOR_STATE_STOP");
+		// LOG_INF("motor status: MOTOR_STATE_STOP");
 		f_data->iq_ref = 0.0f;
 		f_data->speed_ref = 0.0f;
 		pid_reset(&(f_data->speed_pid));
@@ -239,7 +239,6 @@ fsm_rt_t motor_position_control_mode(fsm_cb_t *obj)
 	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
 	struct foc_data *f_data = foc->data;
 	SPosPlanner *planner = &(f_data->s_pos_ph);
-	const struct device *feedback = ((const struct motor_config *)motor->config)->feedback;
 	const struct motor_config *mcfg = motor->config;
 
 	statemachine_updatestatus(obj, obj->sig);
@@ -251,7 +250,7 @@ fsm_rt_t motor_position_control_mode(fsm_cb_t *obj)
 			 -12.0f); // 0.076000  0.080000
 		pid_init(&(f_data->iq_pid), 0.08f, 0.006f, 0.5f, 12.0f, -12.0f);
 		pid_init(&(f_data->speed_pid), 0.0125f, 0.0083f, 0.5f, 48.0f, -48.0f);
-		pid_init(&(f_data->pos_pid), 5.0f, 0.0001f, 0.50f, POS_PID_LIMIT_MAX,
+		pid_init(&(f_data->pos_pid), 10.0f, 0.0001f, 0.50f, POS_PID_LIMIT_MAX,
 			 -POS_PID_LIMIT_MAX);
 		s_pos_planner_init(planner, 1400.0f, 3000.0f, 15000.0f);
 		motor_start(motor);
@@ -259,59 +258,33 @@ fsm_rt_t motor_position_control_mode(fsm_cb_t *obj)
 
 		obj->chState = MOTOR_STATE_IDLE;
 		break;
-		/*-----------INIT-------------*/
 	case MOTOR_STATE_INIT:
 		m_data->statue = MOTOR_STATE_INIT;
 		LOG_INF("motor status: MOTOR_STATE_INIT");
 		motor_set_threephase_enable(motor);
-		f_data->speed_ref = 0.0f;
-		f_data->pos_ref = 0.0f;
-		feedback_set_pos(feedback);
-		s_pos_planning(planner, 0.0f, f_data->pos_splanning_targe, 3.0f);
+		s_pos_planning(planner, f_data->pos_splanning_start, f_data->pos_splanning_targe,
+			       5.0f);
 		obj->chState = MOTOR_STATE_READY;
 		// break;
 	case MOTOR_STATE_READY:
 		m_data->statue = MOTOR_STATE_READY;
 		break;
-		/*---------RUNING-------------*/
 	case MOTOR_STATE_CLOSED_LOOP: // Runing
 		m_data->statue = MOTOR_STATE_CLOSED_LOOP;
 		float cur_speed;
 		cur_speed = f_data->speed_real;
 		float cur_pos = f_data->pos_real;
-		static int8_t temp_cont = 0;
-		if (temp_cont++ > 4) {
-			temp_cont = 0;
-			f_data->pos_ref = s_pos_update(planner, 0.005f);
-		}
+		f_data->pos_ref = s_pos_update(planner, 0.001f);
 		f_data->speed_ref = pid_contrl(&f_data->pos_pid, f_data->pos_ref, cur_pos);
 		f_data->id_ref = 0.0f;
 		f_data->iq_ref = pid_contrl(&f_data->speed_pid, f_data->speed_ref, cur_speed);
 		break;
-		/*-------PARAM UPDATE----------*/
-	case MOTOR_STATE_PARAM_UPDATE:
-		m_data->statue = MOTOR_STATE_PARAM_UPDATE;
-		LOG_INF("motor status: MOTOR_STATE_PARAM_UPDATE");
-		motor_set_threephase_disable(motor);
-		float kp, ki;
-		float *param = (float *)obj->p2;
-		kp = param[0];
-		ki = param[1];
-		pid_init(&(f_data->pos_pid), kp, ki, 0.80f, POS_PID_LIMIT_MAX, -POS_PID_LIMIT_MAX);
-		LOG_INF("pid param %f,%f", (double)kp, (double)ki);
-		param[0] = 0.0f;
-		param[1] = 0.0f;
-		obj->chState = MOTOR_STATE_IDLE;
-		break;
-		/*-----------IDLE-------------*/
 	case MOTOR_STATE_IDLE:
 		m_data->statue = MOTOR_STATE_IDLE;
-		/* Main operational state - handled by FOC */
 		break;
 		/*-----------STOP-------------*/
 	case MOTOR_STATE_STOP:
 		m_data->statue = MOTOR_STATE_STOP;
-		LOG_INF("motor status: MOTOR_STATE_STOP");
 		f_data->iq_ref = 0.0f;
 		f_data->speed_ref = 0.0f;
 		pid_reset(&(f_data->pos_pid));

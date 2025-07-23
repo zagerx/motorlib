@@ -46,6 +46,7 @@ void _write(const struct device *dev, int16_t flag, float *input)
 		float posi_ref;
 		posi_ref = input[0];
 		data->pos_splanning_targe = posi_ref;
+		data->pos_splanning_start = input[1];
 	} break;
 	case FOC_PARAM_DQ_REAL: {
 		data->i_d = input[0];

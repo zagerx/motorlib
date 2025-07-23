@@ -49,7 +49,7 @@ struct foc_data {
 	float speed_ref;
 	float speed_real;
 	s_in_t s_speed_ph;
-	float pos_real, pos_ref, pos_pre, pos_splanning_targe;
+	float pos_real, pos_ref, pos_pre, pos_splanning_start, pos_splanning_targe;
 	SPosPlanner s_pos_ph;
 	lowfilter_t speed_filter;
 	modulation_ctrl_t modulation;
