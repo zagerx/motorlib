@@ -33,7 +33,8 @@ enum motor_mode {
 	MOTOR_MODE_SPEED = 1,
 	MOTOR_MODE_POSI,
 	MOTOR_MODE_TORQUE,
-	MOTOR_MODE_SELFCHECK
+	MOTOR_MODE_SELFCHECK,
+	MOTOR_MODE_IDLE
 };
 
 enum motor_cmd {
@@ -54,17 +55,14 @@ struct motor_data {
 	enum motor_cmd cmd;
 };
 
-void motor_set_mode(const struct device *motor, enum motor_mode mode);
-extern void motor_set_ref_param(int8_t flag, float current_ref, float speed_ref);
-void motor_cmd_set(int16_t cmd, void *pdata, int8_t datalen);
 enum motor_mode motor_get_mode(const struct device *motor);
 enum motor_state motor_get_state(const struct device *motor);
-enum motor_mode motor_get_mode(const struct device *motor);
+void motor_set_mode(const struct device *motor, enum motor_mode mode);
 void motor_set_state(const struct device *motor, enum motor_cmd sig);
-void motor_set_target(const struct device *motor, float target);
-float motor_get_curposi(const struct device *motor);
-void motor_getbus_vol_curr(const struct device *motor, float *bus_vol, float *bus_curr);
-void motor_set_targetPosi(const struct device *motor, float target, float start);
+float motor_get_current_position(const struct device *motor);
+void motor_get_bus_voltage_current(const struct device *motor, float *bus_vol, float *bus_curr);
+void motor_set_target_position(const struct device *motor, float target, float start);
 void motor_clear_realodom(const struct device *motor, float odom);
+void motor_set_target_speed(const struct device *motor, float target);
 
 #endif

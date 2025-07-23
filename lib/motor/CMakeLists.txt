@@ -4,4 +4,5 @@
 zephyr_library_sources(
 	motor_internal.c
 	motor_mode.c
+	motor_state.c
 )

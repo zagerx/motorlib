@@ -29,7 +29,7 @@
 #include <drivers/pwm.h>
 #include <drivers/feedback.h>
 #include <statemachine.h>
-
+#include <lib/bldcmotor/motor_internal.h>
 /* Device tree compatibility string */
 #define DT_DRV_COMPAT motor_bldc
 
@@ -37,28 +37,21 @@
 LOG_MODULE_REGISTER(motor, LOG_LEVEL_DBG);
 
 /* External FSM state handlers */
+extern fsm_rt_t motor_idle_control_mode(fsm_cb_t *obj);
 extern fsm_rt_t motor_torque_control_mode(fsm_cb_t *obj);
 extern fsm_rt_t motor_speed_control_mode(fsm_cb_t *obj);
 extern fsm_rt_t motor_position_control_mode(fsm_cb_t *obj);
-extern fsm_rt_t motor_test_control_mode(fsm_cb_t *obj);
-/**
- * motor_state_map - Motor FSM signal-to-state transition mapping
- * @signal: Trigger signal
- * @target_state: Resulting state after signal processing
- */
-static struct state_transition_map motor_state_map[] = {
-	/* Reserved signals */
-	{.signal = NULL_USE_SING, .target_state = -1},
-	/* Command signals */
-	{.signal = MOTOR_CMD_SET_ENABLE, .target_state = MOTOR_STATE_INIT},
-	{.signal = MOTOR_CMD_SET_DISABLE, .target_state = MOTOR_STATE_STOP},
-	{.signal = MOTOR_CMD_SET_PIDPARAM, .target_state = MOTOR_STATE_PARAM_UPDATE},
-	{.signal = MOTOR_CMD_SET_SPEED, .target_state = MOTOR_STATE_CLOSED_LOOP},
-	{.signal = MOTOR_CMD_SET_START, .target_state = MOTOR_STATE_CLOSED_LOOP},
-	{.signal = MOTOR_CMD_SET_VOLFAULT, .target_state = MOTOR_STATE_FAULT},
-	{.signal = MOTOR_CMD_SET_IDLE, .target_state = MOTOR_STATE_IDLE},
+extern fsm_rt_t motor_init_state(fsm_cb_t *obj);
+extern fsm_rt_t motor_ready_state(fsm_cb_t *obj);
+extern fsm_rt_t motor_runing_state(fsm_cb_t *obj);
+extern fsm_rt_t motor_stop_state(fsm_cb_t *obj);
 
-};
+fsm_t get_motor_state(const void *obj)
+{
+	const struct device *motor = (const struct device *)obj;
+	struct motor_config *m_cfg = (struct motor_config *)motor->config;
+	return m_cfg->fsm->sub_state_machine->current_state;
+}
 
 /**
  * @brief FOC current regulator callback
@@ -79,7 +72,6 @@ static void foc_curr_regulator(void *ctx)
 	struct foc_data *data = foc->data;
 	struct currsmp_curr current_now;
 
-	struct motor_data *m_data = dev->data;
 	svm_t *svm = data->svm_handle;
 	/* Get current measurements */
 	currsmp_get_currents(currsmp, &current_now);
@@ -98,33 +90,25 @@ static void foc_curr_regulator(void *ctx)
 	park_f32((data->i_alpha), (data->i_beta), &(data->i_d), &(data->i_q), sin_the, cos_the);
 
 	/* Update rotor angle */
+	fsm_cb_t *mcsm;
+	mcsm = cfg->fsm->sub_state_machine;
 	float d_out, q_out;
-	if (m_data->statue == MOTOR_STATE_CLOSED_LOOP) {
+	if (motor_get_state(dev) == MOTOR_STATE_CLOSED_LOOP) {
 		d_out = pid_contrl((pid_cb_t *)(&data->id_pid), 0.0f, data->i_d);
-		// d_out = 0.0f;
 		q_out = pid_contrl((pid_cb_t *)(&data->iq_pid), data->iq_ref, data->i_q);
-		// q_out = data->iq_ref;
-		// q_out = -0.02f;
 		svm_apply_voltage_limiting(foc, &d_out, &q_out, data->bus_vol);
-
 		sin_cos_f32(((data->eangle)), &sin_the, &cos_the);
-		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
-	} else if (m_data->statue == MOTOR_STATE_ALIGN) {
-		d_out = 0.0f;
-		q_out = 0.02;
-		svm_apply_voltage_limiting(foc, &d_out, &q_out, data->bus_vol);
-		sin_cos_f32(((0.0f) * 57.2957795131f), &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
 	} else {
 		d_out = 0.0f;
-		q_out = 0.0f;
-		sin_cos_f32(((data->eangle) * 57.2957795131f), &sin_the, &cos_the);
+		q_out = 0.00f;
+		svm_apply_voltage_limiting(foc, &d_out, &q_out, data->bus_vol);
+		sin_cos_f32(((data->eangle)), &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
 	}
 	foc_modulate(foc, alph, beta);
 	pwm_set_phase_voltages(cfg->pwm, svm->duties.a, svm->duties.b, svm->duties.c);
 }
-
 void motor_set_mode(const struct device *motor, enum motor_mode mode)
 {
 	const struct motor_config *mcfg = motor->config;
@@ -137,46 +121,43 @@ void motor_set_mode(const struct device *motor, enum motor_mode mode)
 		TRAN_STATE(mfsm, motor_position_control_mode);
 	}
 }
-
 enum motor_mode motor_get_mode(const struct device *motor)
 {
 	const struct motor_data *mdata = motor->data;
 	return mdata->mode;
 }
-
 void motor_set_state(const struct device *motor, enum motor_cmd sig)
 {
 	struct motor_config *mcfg = (struct motor_config *)motor->config;
-	statemachine_setsig((fsm_cb_t *)mcfg->fsm, sig);
-}
+	fsm_cb_t *sub_sm = mcfg->fsm->sub_state_machine;
 
+	if (sig == MOTOR_CMD_SET_ENABLE) {
+		TRAN_STATE(sub_sm, motor_ready_state);
+	} else if (sig == MOTOR_CMD_SET_START) {
+		TRAN_STATE(sub_sm, motor_runing_state);
+	} else if (sig == MOTOR_CMD_SET_DISABLE) {
+		TRAN_STATE(sub_sm, motor_stop_state);
+	}
+}
 enum motor_state motor_get_state(const struct device *motor)
 {
 	const struct motor_data *mdata = motor->data;
 	return mdata->statue;
 }
 
-void motor_set_target(const struct device *motor, float target)
+void motor_set_target_speed(const struct device *motor, float target)
 {
-	const struct motor_data *mdata = motor->data;
 	const struct motor_config *mcfg = motor->config;
 	const struct device *devfoc = mcfg->foc_dev;
-	if (mdata->mode == MOTOR_MODE_SPEED) {
-		foc_update_parameter(devfoc, FOC_PARAM_SPEED_REF, (float *)&target);
-	} else if (mdata->mode == MOTOR_MODE_TORQUE) {
-		foc_update_parameter(devfoc, FOC_PARAM_DQ_REF, (float *)&target);
-	} else if (mdata->mode == MOTOR_MODE_POSI) {
-		// foc_update_parameter(devfoc, FOC_PARAM_POSI_REF,(float *)&target);
-		foc_update_parameter(devfoc, FOC_PARAM_POSI_PLANNING, (float *)&target);
-	}
+	foc_update_target_speed(devfoc, target);
 }
 void motor_set_vol(const struct device *motor, float *bus_vol)
 {
 	const struct motor_config *mcfg = motor->config;
 	const struct device *devfoc = mcfg->foc_dev;
-	foc_update_parameter(devfoc, FOC_PARAM_BUSVOL, bus_vol);
+	foc_update_vbusvolita_cbuscurr(devfoc, bus_vol[0], bus_vol[1]);
 }
-float motor_get_curposi(const struct device *motor)
+float motor_get_current_position(const struct device *motor)
 {
 	const struct motor_config *mcfg = motor->config;
 	const struct device *devfoc = mcfg->foc_dev;
@@ -189,19 +170,7 @@ void motor_clear_realodom(const struct device *motor, float odom)
 	const struct device *feedback = mcfg->feedback;
 	feedback_set_pos(feedback);
 }
-void motor_set_targetPosi(const struct device *motor, float target, float start)
-{
-	const struct motor_data *mdata = motor->data;
-	const struct motor_config *mcfg = motor->config;
-	const struct device *devfoc = mcfg->foc_dev;
-	float input[2];
-	if (mdata->mode == MOTOR_MODE_POSI) {
-		input[0] = target;
-		input[1] = start;
-		foc_update_parameter(devfoc, FOC_PARAM_POSI_PLANNING, (float *)input);
-	}
-}
-void motor_getbus_vol_curr(const struct device *motor, float *bus_vol, float *bus_curr)
+void motor_get_bus_voltage_current(const struct device *motor, float *bus_vol, float *bus_curr)
 {
 	struct motor_config *cfg = (struct motor_config *)motor->config;
 	struct device *currsmp = (struct device *)cfg->currsmp;
@@ -224,18 +193,17 @@ static int motor_init(const struct device *dev)
 
 	/* Configure current sampling */
 	currsmp_configure(currsmp, foc_curr_regulator, (void *)dev);
-	LOG_INF("foc_init name: %s", dev->name);
-
-	/* Initialize state machine */
-	statemachine_init(cfg->fsm, dev->name, motor_position_control_mode, (void *)dev,
-			  motor_state_map, ARRAY_SIZE(motor_state_map));
-	// motor_set_mode(dev, MOTOR_MODE_POSI);
 	return 0;
 }
-/* Device tree instantiation macros */
 
+/* Device tree instantiation macros */
 #define MOTOR_INIT(n)                                                                              \
-	fsm_cb_t fsm_##n;                                                                          \
+	fsm_cb_t control_state_machine_##n;                                                        \
+	fsm_cb_t mode_state_machine_##n = {                                                        \
+		.sub_state_machine = &control_state_machine_##n,                                   \
+		.current_state = motor_idle_control_mode,                                          \
+		.p1 = (void *)DEVICE_DT_GET(DT_DRV_INST(n)),                                       \
+	};                                                                                         \
 	fmm_t bus_vol_fault_##n;                                                                   \
 	fmm_t bus_curr_fault_##n;                                                                  \
 	static const struct motor_config motor_cfg_##n = {                                         \
@@ -243,7 +211,7 @@ static int motor_init(const struct device *dev)
 		.pwm = DEVICE_DT_GET(DT_INST_PHANDLE(n, pwm)),                                     \
 		.currsmp = DEVICE_DT_GET(DT_INST_PHANDLE(n, currsmp)),                             \
 		.feedback = DEVICE_DT_GET(DT_INST_PHANDLE(n, feedback)),                           \
-		.fsm = &fsm_##n,                                                                   \
+		.fsm = &mode_state_machine_##n,                                                    \
 		.fault = {&bus_vol_fault_##n, &bus_curr_fault_##n}};                               \
 	static struct motor_data motor_data_##n;                                                   \
 	DEVICE_DT_INST_DEFINE(n, motor_init, NULL, &motor_data_##n, &motor_cfg_##n, POST_KERNEL,   \

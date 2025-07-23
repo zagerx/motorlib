@@ -85,7 +85,7 @@ struct foc_api {
 	int (*currloop)(const struct device *);
 	int (*opencloop)(const struct device *);
 	void (*curr_regulator)(void *ctx);
-	void (*write_data)(const struct device *, int16_t, float *);
+	// void (*write_data)(const struct device *, int16_t, float *);
 };
 
 static inline void foc_modulate(const struct device *dev, float alpha, float beta)
@@ -95,11 +95,31 @@ static inline void foc_modulate(const struct device *dev, float alpha, float bet
 	cfg->modulate(data->svm_handle, alpha, beta);
 }
 
-static inline void foc_update_parameter(const struct device *dev, int16_t flag, float *input)
+// static inline void foc_update_parameter(const struct device *dev, int16_t flag, float *input)
+// {
+// 	const struct foc_api *api = dev->api;
+// 	api->write_data(dev, flag, input);
+// }
+
+static inline int foc_update_target_speed(const struct device *dev, float target)
 {
-	const struct foc_api *api = dev->api;
-	api->write_data(dev, flag, input);
+	struct foc_data *data = dev->data;
+	return s_velocity_planning(&data->s_speed_ph, target);
 }
+static inline int foc_update_vbusvolita_cbuscurr(const struct device *dev, float bus_vol,
+						 float bus_curr)
+{
+	struct foc_data *data = dev->data;
+	data->bus_vol = bus_vol;
+	data->bus_curr = bus_curr;
+	return 0;
+}
+int foc_posloop_init(const struct device *dev);
+int foc_posloop(const struct device *dev);
+int foc_posloop_deinit(const struct device *dev);
+int foc_speedloop_init(const struct device *dev);
+int foc_speedloop_deinit(const struct device *dev);
+int foc_speedloop(const struct device *dev);
 
 extern float foc_calculate_speed(const struct device *dev, float cur_speed);
 void svm_apply_voltage_limiting(const struct device *dev, float *vd, float *vq, float Vdc);
