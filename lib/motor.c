@@ -46,13 +46,6 @@ extern fsm_rt_t motor_ready_state(fsm_cb_t *obj);
 extern fsm_rt_t motor_runing_state(fsm_cb_t *obj);
 extern fsm_rt_t motor_stop_state(fsm_cb_t *obj);
 
-fsm_t get_motor_state(const void *obj)
-{
-	const struct device *motor = (const struct device *)obj;
-	struct motor_config *m_cfg = (struct motor_config *)motor->config;
-	return m_cfg->fsm->sub_state_machine->current_state;
-}
-
 /**
  * @brief FOC current regulator callback
  * @param ctx Device context pointer
@@ -72,9 +65,8 @@ static void foc_curr_regulator(void *ctx)
 	struct foc_data *data = foc->data;
 	struct currsmp_curr current_now;
 
-	svm_t *svm = data->svm_handle;
 	/* Get current measurements */
-	currsmp_get_currents(currsmp, &current_now);
+	currsmp_get_phase_currents(currsmp, &current_now);
 	data->i_a = current_now.i_a;
 	data->i_b = current_now.i_b;
 	data->i_c = current_now.i_c;
@@ -89,9 +81,6 @@ static void foc_curr_regulator(void *ctx)
 	clarke_f32(current_now.i_a, current_now.i_b, &(data->i_alpha), &(data->i_beta));
 	park_f32((data->i_alpha), (data->i_beta), &(data->i_d), &(data->i_q), sin_the, cos_the);
 
-	/* Update rotor angle */
-	fsm_cb_t *mcsm;
-	mcsm = cfg->fsm->sub_state_machine;
 	float d_out, q_out;
 	if (motor_get_state(dev) == MOTOR_STATE_CLOSED_LOOP) {
 		d_out = pid_contrl((pid_cb_t *)(&data->id_pid), 0.0f, data->i_d);
@@ -106,8 +95,11 @@ static void foc_curr_regulator(void *ctx)
 		sin_cos_f32(((data->eangle)), &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
 	}
-	foc_modulate(foc, alph, beta);
-	pwm_set_phase_voltages(cfg->pwm, svm->duties.a, svm->duties.b, svm->duties.c);
+	float dabc[3];
+	/* Perform SVM modulation */
+	foc_modulate(foc, alph, beta, dabc);
+	/* Set PWM outputs */
+	pwm_set_phase_voltages(cfg->pwm, dabc[0], dabc[1], dabc[2]);
 }
 void motor_set_mode(const struct device *motor, enum motor_mode mode)
 {
@@ -174,7 +166,7 @@ void motor_get_bus_voltage_current(const struct device *motor, float *bus_vol, f
 {
 	struct motor_config *cfg = (struct motor_config *)motor->config;
 	struct device *currsmp = (struct device *)cfg->currsmp;
-	currsmp_get_bus_vol_curr(currsmp, bus_vol, bus_curr);
+	currsmp_get_bus_voltage_current(currsmp, bus_vol, bus_curr);
 }
 /**
  * @brief Motor device initialization

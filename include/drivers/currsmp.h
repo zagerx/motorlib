@@ -66,23 +66,21 @@ static inline void currsmp_configure(const struct device *dev,
  * @param[in] dev Current sampling device.
  * @param[out] curr Pointer where phase currents will be stored.
  */
-static inline void currsmp_get_currents(const struct device *dev, struct currsmp_curr *curr)
+static inline void currsmp_get_phase_currents(const struct device *dev, struct currsmp_curr *curr)
 {
 	const struct currsmp_driver_api *api = dev->api;
 
 	api->get_currents(dev, curr);
 }
 
-static inline void currsmp_get_bus_vol_curr(const struct device *dev, float *bus_vol,
-					    float *bus_curr)
+static inline void currsmp_get_bus_voltage_current(const struct device *dev, float *bus_vol,
+						   float *bus_curr)
 {
 	const struct currsmp_driver_api *api = dev->api;
 	if (api->get_bus_volcurr) {
 		api->get_bus_volcurr(dev, bus_vol, bus_curr);
 	}
 }
-
-float currsmp_get_busvol(void);
 
 /** @} */
 

@@ -37,14 +37,14 @@ static inline float _normalize_angle(float angle)
 }
 /* Driver configuration structure */
 struct abz_hall_stm32_config {
-	uint32_t lines;			       /* Encoder lines per revolution */
-	uint32_t pole_pairs;		       /* Motor pole pairs */
-	TIM_TypeDef *timer;		       /* Timer instance */
-	struct stm32_pclken pclken;	       /* Clock enable info */
+	uint32_t lines;                        /* Encoder lines per revolution */
+	uint32_t pole_pairs;                   /* Motor pole pairs */
+	TIM_TypeDef *timer;                    /* Timer instance */
+	struct stm32_pclken pclken;            /* Clock enable info */
 	const struct pinctrl_dev_config *pcfg; /* Pin configuration */
-	struct gpio_dt_spec hu_gpio;	       /* Hall U phase GPIO */
-	struct gpio_dt_spec hv_gpio;	       /* Hall V phase GPIO */
-	struct gpio_dt_spec hw_gpio;	       /* Hall W phase GPIO */
+	struct gpio_dt_spec hu_gpio;           /* Hall U phase GPIO */
+	struct gpio_dt_spec hv_gpio;           /* Hall V phase GPIO */
+	struct gpio_dt_spec hw_gpio;           /* Hall W phase GPIO */
 };
 
 /* Driver runtime data */
@@ -54,13 +54,12 @@ struct hall_data_t {
 	float base_angle[7];
 	float eangle;
 	float eomega;
-	float rel_odom;
+	float realtime_odom;
 	int8_t dir;
 };
 struct abz_hall_stm32_data {
-	int overflow;		      /* Timer overflow count */
-	float mangle_ratio;	      /* Mechanical angle ratio */
-	float eangle_ratio;	      /* Electrical angle ratio */
+	int overflow;                 /* Timer overflow count */
+	float eangle_ratio;           /* Electrical angle ratio */
 	struct gpio_callback gpio_cb; /* GPIO callback */
 	const struct device *dev;     /* Device instance */
 	struct hall_data_t hall;
@@ -72,74 +71,68 @@ static void hall_angleupdate(const void *obj, uint8_t cur_sect)
 	switch (hall->pre_sect) {
 		/****************************SECTION 6***********************************/
 	case 6:
-		if (cur_sect == 4) { // 正转
+		if (cur_sect == 4) {
 			hall->dir = 1;
-		} else if (cur_sect == 2) { //
+		} else if (cur_sect == 2) {
 			hall->dir = -1;
-		} else if (cur_sect == 6) { // 仍在当前扇区
+		} else if (cur_sect == 6) {
 
 		} else {
-			// 错误
 		}
 		break;
 		/****************************SECTION 4***********************************/
 	case 4:
-		if (cur_sect == 5) { // 正转
+		if (cur_sect == 5) {
 			hall->dir = 1;
-		} else if (cur_sect == 6) { //
+		} else if (cur_sect == 6) {
 			hall->dir = -1;
-		} else if (cur_sect == 4) { // 仍在当前扇区
+		} else if (cur_sect == 4) {
 
 		} else {
-			// 错误
 		}
 		break;
 		/****************************SECTION 5***********************************/
 	case 5:
-		if (cur_sect == 1) { // 正转
+		if (cur_sect == 1) {
 			hall->dir = 1;
-		} else if (cur_sect == 4) { //
+		} else if (cur_sect == 4) {
 			hall->dir = -1;
-		} else if (cur_sect == 5) { // 仍在当前扇区
+		} else if (cur_sect == 5) {
 
 		} else {
-			// 错误
 		}
 		break;
 		/****************************SECTION 1***********************************/
 	case 1:
-		if (cur_sect == 3) { // 正转
+		if (cur_sect == 3) {
 			hall->dir = 1;
-		} else if (cur_sect == 5) { //
+		} else if (cur_sect == 5) {
 			hall->dir = -1;
-		} else if (cur_sect == 1) { // 仍在当前扇区
+		} else if (cur_sect == 1) {
 
 		} else {
-			// 错误
 		}
 		break;
 		/****************************SECTION 3***********************************/
 	case 3:
-		if (cur_sect == 2) { // 正转
+		if (cur_sect == 2) {
 			hall->dir = 1;
-		} else if (cur_sect == 1) { //
+		} else if (cur_sect == 1) {
 			hall->dir = -1;
-		} else if (cur_sect == 3) { // 仍在当前扇区
+		} else if (cur_sect == 3) {
 
 		} else {
-			// 错误
 		}
 		break;
 		/****************************SECTION 2***********************************/
 	case 2:
-		if (cur_sect == 6) { // 正转
+		if (cur_sect == 6) {
 			hall->dir = 1;
-		} else if (cur_sect == 3) { //
+		} else if (cur_sect == 3) {
 			hall->dir = -1;
-		} else if (cur_sect == 2) { // 仍在当前扇区
+		} else if (cur_sect == 2) {
 
 		} else {
-			// 错误
 		}
 		break;
 		/***********************ERR SECTION***********************************/
@@ -150,8 +143,7 @@ static void hall_angleupdate(const void *obj, uint8_t cur_sect)
 	// if(cur_sect == 6)
 	{
 		if (hall->dir == 1) {
-			temp = hall->base_angle[cur_sect] +
-			       HALL_SENSOR_POSITIVE_OFFSET; // 根据实际情况正转角度进行补偿
+			temp = hall->base_angle[cur_sect] + HALL_SENSOR_POSITIVE_OFFSET;
 			hall->eangle = temp;
 		} else if (hall->dir == -1) {
 			hall->eangle = hall->base_angle[cur_sect] + HALL_SENSOR_NEGATIVE_OFFSET;
@@ -173,41 +165,32 @@ static float abz_stm32_get_eangle(const struct device *dev)
 
 	hall->eangle += diff;
 	hall->eomega = (diff) / 57.2957795131f;
-	hall->rel_odom += (diff / 57.295779513f);
+	hall->realtime_odom += (diff / 57.295779513f);
 	hall->eangle = _normalize_angle(hall->eangle);
 	return hall->eangle;
 }
-static void abz_stm32_set_rel_odom(const struct device *dev)
+static void abz_stm32_set_realtime_odom(const struct device *dev)
 {
 	const struct abz_hall_stm32_data *data = dev->data;
 	struct hall_data_t *hall = (struct hall_data_t *)(&data->hall);
-	hall->rel_odom = 0.0f;
+	hall->realtime_odom = 0.0f;
 }
-static float abz_stm32_get_mangle(const struct device *dev)
-{
-	/* TODO: Implement mechanical angle calculation */
-	return 0.0f;
-}
-
 static float abz_stm32_get_rads(const struct device *dev)
 {
-	/* TODO: Implement eomega calculation */
 	const struct abz_hall_stm32_data *data = dev->data;
 	struct hall_data_t *hall = (struct hall_data_t *)(&data->hall);
 	return hall->eomega;
 }
 
-static float abz_stm32_get_rel_odom(const struct device *dev)
+static float abz_stm32_get_realtime_odom(const struct device *dev)
 {
-	/* TODO: Implement position calculation */
 	const struct abz_hall_stm32_data *data = dev->data;
 	struct hall_data_t *hall = (struct hall_data_t *)(&data->hall);
-	return hall->rel_odom;
+	return hall->realtime_odom;
 }
 
 static int abz_stm32_calibrate_eangle(const struct device *dev)
 {
-	/* TODO: Implement position calculation */
 	const struct abz_hall_stm32_data *data = dev->data;
 	struct hall_data_t *hall = (struct hall_data_t *)(&data->hall);
 
@@ -231,27 +214,23 @@ static void abz_hall_stm32_enable(const struct device *dev)
 	const struct abz_hall_stm32_config *cfg = dev->config;
 	uint8_t ret;
 	LOG_INF("device name: %s", dev->name);
-	/* Start encoder timer */
 	LL_TIM_EnableCounter(cfg->timer);
-	/* Configure hall sensor interrupts */
 	ret = gpio_pin_interrupt_configure_dt(&cfg->hu_gpio, GPIO_INT_EDGE_BOTH);
 	ret |= gpio_pin_interrupt_configure_dt(&cfg->hv_gpio, GPIO_INT_EDGE_BOTH);
 	ret |= gpio_pin_interrupt_configure_dt(&cfg->hw_gpio, GPIO_INT_EDGE_BOTH);
 	if (ret < 0) {
 		LOG_ERR("Failed to configure interrupts");
 	}
-	/* Update sector information */
 }
 
 /* Driver API structure */
 static const struct feedback_driver_api driver_feedback = {
 	.get_rads = abz_stm32_get_rads,
 	.get_eangle = abz_stm32_get_eangle,
-	.get_mangle = abz_stm32_get_mangle,
 	.calibration = abz_stm32_calibrate_eangle,
-	.get_rel_odom = abz_stm32_get_rel_odom,
+	.get_rel_odom = abz_stm32_get_realtime_odom,
 	.feedback_enable = abz_hall_stm32_enable,
-	.set_rel_odom = abz_stm32_set_rel_odom,
+	.set_rel_odom = abz_stm32_set_realtime_odom,
 };
 
 /*
@@ -268,8 +247,6 @@ static void hall_gpio_callback(const struct device *port, struct gpio_callback *
 	int hu_state = gpio_pin_get_dt(&cfg->hu_gpio);
 	int hv_state = gpio_pin_get_dt(&cfg->hv_gpio);
 	int hw_state = gpio_pin_get_dt(&cfg->hw_gpio);
-
-	//  LOG_DBG("Hall states - HALL_VAL:%d", hu_state<<2|hv_state<<1|hw_state);
 
 	/* Update sector information */
 	uint8_t cur_sect;

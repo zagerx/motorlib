@@ -53,7 +53,7 @@ void svm_init(svm_t *svm);
  * @param[in] va v_alpha value.
  * @param[in] vb v_beta value.
  */
-void svm_set(svm_t *svm, float va, float vb);
+void svm_set(float va, float vb, float *dabc);
 
 /** @} */
 
