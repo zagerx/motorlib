@@ -24,7 +24,7 @@
 #include <zephyr/irq.h>
 #include <drivers/feedback.h>
 #include <stm32_ll_tim.h>
-#include <lib/bldcmotor/motor_Parameter.h>
+#include <lib/motor/motor_Parameter.h>
 
 LOG_MODULE_REGISTER(abz_hall_stm32, LOG_LEVEL_DBG);
 
@@ -37,14 +37,14 @@ static inline float _normalize_angle(float angle)
 }
 /* Driver configuration structure */
 struct abz_hall_stm32_config {
-	uint32_t lines;                        /* Encoder lines per revolution */
-	uint32_t pole_pairs;                   /* Motor pole pairs */
-	TIM_TypeDef *timer;                    /* Timer instance */
-	struct stm32_pclken pclken;            /* Clock enable info */
+	uint32_t lines;			       /* Encoder lines per revolution */
+	uint32_t pole_pairs;		       /* Motor pole pairs */
+	TIM_TypeDef *timer;		       /* Timer instance */
+	struct stm32_pclken pclken;	       /* Clock enable info */
 	const struct pinctrl_dev_config *pcfg; /* Pin configuration */
-	struct gpio_dt_spec hu_gpio;           /* Hall U phase GPIO */
-	struct gpio_dt_spec hv_gpio;           /* Hall V phase GPIO */
-	struct gpio_dt_spec hw_gpio;           /* Hall W phase GPIO */
+	struct gpio_dt_spec hu_gpio;	       /* Hall U phase GPIO */
+	struct gpio_dt_spec hv_gpio;	       /* Hall V phase GPIO */
+	struct gpio_dt_spec hw_gpio;	       /* Hall W phase GPIO */
 };
 
 /* Driver runtime data */
@@ -58,8 +58,8 @@ struct hall_data_t {
 	int8_t dir;
 };
 struct abz_hall_stm32_data {
-	int overflow;                 /* Timer overflow count */
-	float eangle_ratio;           /* Electrical angle ratio */
+	int overflow;		      /* Timer overflow count */
+	float eangle_ratio;	      /* Electrical angle ratio */
 	struct gpio_callback gpio_cb; /* GPIO callback */
 	const struct device *dev;     /* Device instance */
 	struct hall_data_t hall;

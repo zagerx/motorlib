@@ -1,5 +1,5 @@
 #include <lib/foc/foc.h>
-#include <lib/focutils/utils/focutils.h>
+#include <lib/foc/focutils.h>
 
 void svm_apply_voltage_limiting(const struct device *dev, float *vd, float *vq, float Vdc)
 {

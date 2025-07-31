@@ -10,14 +10,14 @@
 
 #include "filter.h"
 #include "pid.h"
-#include "lib/focutils/svm/svm.h"
-#include "lib/focutils/utils/deadtime_comp.h"
+#include "lib/foc/svm.h"
+#include "lib/foc/deadtime_comp.h"
 #include "zephyr/device.h"
 
 #include <sys/_intsup.h>
 #include <zephyr/logging/log.h>
 #include <lib/foc/foc.h>
-#include <lib/focutils/utils/focutils.h>
+#include <lib/foc/focutils.h>
 
 LOG_MODULE_REGISTER(foc, LOG_LEVEL_DBG);
 

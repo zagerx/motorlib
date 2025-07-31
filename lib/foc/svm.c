@@ -5,12 +5,12 @@
 
 #include <stdint.h>
 #include <zephyr/sys/util.h>
-#include <lib/focutils/svm/svm.h>
-#include <lib/focutils/utils/focutils.h>
+#include <lib/foc/svm.h>
+#include <lib/foc/focutils.h>
 
 #undef CLAMP
 #undef MIN
-#define MIN(a, b)             (((a) < (b)) ? (a) : (b))
+#define MIN(a, b)	      (((a) < (b)) ? (a) : (b))
 #define CLAMP(val, low, high) (((val) <= (low)) ? (low) : MIN(val, high))
 
 /*******************************************************************************

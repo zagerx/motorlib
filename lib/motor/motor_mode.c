@@ -18,8 +18,8 @@
 #include <drivers/currsmp.h>
 #include <drivers/feedback.h>
 #include <drivers/pwm.h>
-#include <lib/bldcmotor/motor.h>
-#include <lib/bldcmotor/motor_internal.h>
+#include <lib/motor/motor.h>
+#include <lib/motor/motor_internal.h>
 #include <lib/foc/foc.h> //TODO
 #include <statemachine.h>
 #include <stdint.h>

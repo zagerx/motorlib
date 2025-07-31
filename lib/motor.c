@@ -22,14 +22,14 @@
 #include <zephyr/logging/log.h>
 
 /* Local includes */
-#include <lib/focutils/utils/focutils.h>
-#include <lib/bldcmotor/motor.h>
+#include <lib/foc/focutils.h>
+#include <lib/motor/motor.h>
 #include <lib/foc/foc.h> //TODO
 #include <drivers/currsmp.h>
 #include <drivers/pwm.h>
 #include <drivers/feedback.h>
 #include <statemachine.h>
-#include <lib/bldcmotor/motor_internal.h>
+#include <lib/motor/motor_internal.h>
 /* Device tree compatibility string */
 #define DT_DRV_COMPAT motor_bldc
 
@@ -103,8 +103,8 @@ static void foc_curr_regulator(void *ctx)
 }
 void motor_set_mode(const struct device *motor, enum motor_mode mode)
 {
-	const struct motor_config *mcfg = motor->config;
-	fsm_cb_t *mfsm = mcfg->fsm;
+	const struct motor_data *m_data = motor->data;
+	fsm_cb_t *mfsm = m_data->mode_state_mec;
 	if (mode == MOTOR_MODE_TORQUE) {
 		TRAN_STATE(mfsm, motor_torque_control_mode);
 	} else if (mode == MOTOR_MODE_SPEED) {
@@ -120,8 +120,8 @@ enum motor_mode motor_get_mode(const struct device *motor)
 }
 void motor_set_state(const struct device *motor, enum motor_cmd sig)
 {
-	struct motor_config *mcfg = (struct motor_config *)motor->config;
-	fsm_cb_t *sub_sm = mcfg->fsm->sub_state_machine;
+	const struct motor_data *m_data = motor->data;
+	fsm_cb_t *sub_sm = m_data->mode_state_mec->sub_state_machine;
 
 	if (sig == MOTOR_CMD_SET_ENABLE) {
 		TRAN_STATE(sub_sm, motor_ready_state);
@@ -203,9 +203,10 @@ static int motor_init(const struct device *dev)
 		.pwm = DEVICE_DT_GET(DT_INST_PHANDLE(n, pwm)),                                     \
 		.currsmp = DEVICE_DT_GET(DT_INST_PHANDLE(n, currsmp)),                             \
 		.feedback = DEVICE_DT_GET(DT_INST_PHANDLE(n, feedback)),                           \
-		.fsm = &mode_state_machine_##n,                                                    \
 		.fault = {&bus_vol_fault_##n, &bus_curr_fault_##n}};                               \
-	static struct motor_data motor_data_##n;                                                   \
+	static struct motor_data motor_data_##n = {                                                \
+		.mode_state_mec = &mode_state_machine_##n,                                         \
+	};                                                                                         \
 	DEVICE_DT_INST_DEFINE(n, motor_init, NULL, &motor_data_##n, &motor_cfg_##n, POST_KERNEL,   \
 			      CONFIG_MOTOR_INIT_PRIORITY, NULL);
 
