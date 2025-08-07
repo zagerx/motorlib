@@ -143,6 +143,13 @@ void motor_set_target_speed(const struct device *motor, float target)
 	const struct device *devfoc = mcfg->foc_dev;
 	foc_update_target_speed(devfoc, target);
 }
+void motor_set_target_position(const struct device *motor, float start, float target,
+			       float total_time)
+{
+	const struct motor_config *mcfg = motor->config;
+	const struct device *devfoc = mcfg->foc_dev;
+	foc_update_target_position(devfoc, start, target, total_time);
+}
 void motor_set_vol(const struct device *motor, float *bus_vol)
 {
 	const struct motor_config *mcfg = motor->config;

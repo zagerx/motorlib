@@ -66,20 +66,11 @@ fsm_rt_t motor_ready_state(fsm_cb_t *obj)
 	};
 	const struct device *motor = obj->p1;
 	struct motor_data *m_data = motor->data;
-	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
 	const struct device *svpwm = ((const struct motor_config *)motor->config)->pwm;
-	struct foc_data *f_data = foc->data;
-	SPosPlanner *planner = &(f_data->s_pos_ph);
 	switch (obj->chState) {
 	case ENTER:
 		m_data->statue = MOTOR_STATE_READY;
-
 		svpwm_enable_threephase_channle(svpwm);
-		if (m_data->mode == MOTOR_MODE_POSI) {
-			s_pos_planning(planner, 0.0F, 3000.0f, 5.0f); // TODO
-		} else if (m_data->mode == MOTOR_MODE_SPEED) {
-			s_velocity_planning(&(f_data->s_speed_ph), 2.5f);
-		}
 		obj->chState = RUNING;
 		break;
 	case RUNING:

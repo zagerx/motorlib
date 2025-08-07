@@ -58,7 +58,8 @@ void motor_set_mode(const struct device *motor, enum motor_mode mode);
 void motor_set_state(const struct device *motor, enum motor_cmd sig);
 float motor_get_current_position(const struct device *motor);
 void motor_get_bus_voltage_current(const struct device *motor, float *bus_vol, float *bus_curr);
-void motor_set_target_position(const struct device *motor, float target, float start);
+void motor_set_target_position(const struct device *motor, float start, float target,
+			       float total_time);
 void motor_clear_realodom(const struct device *motor, float odom);
 void motor_set_target_speed(const struct device *motor, float target);
 

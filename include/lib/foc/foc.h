@@ -77,6 +77,12 @@ static inline int foc_update_target_speed(const struct device *dev, float target
 	struct foc_data *data = dev->data;
 	return s_velocity_planning(&data->s_speed_ph, target);
 }
+static inline int foc_update_target_position(const struct device *dev, float start_pos,
+					     float target_pos, float total_time)
+{
+	struct foc_data *data = dev->data;
+	return s_pos_planning(&data->s_pos_ph, start_pos, target_pos, total_time);
+}
 static inline int foc_update_vbusvolita_cbuscurr(const struct device *dev, float bus_vol,
 						 float bus_curr)
 {
