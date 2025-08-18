@@ -40,13 +40,11 @@ fsm_rt_t motor_init_state(fsm_cb_t *obj)
 	switch (obj->chState) {
 	case ENTER:
 		m_data->statue = MOTOR_STATE_INIT;
-		LOG_DBG("motor_init_state   curmode:%d", m_data->mode);
 		if (m_data->mode == MOTOR_MODE_POSI) {
 			foc_posloop_init(foc);
 		} else if (m_data->mode == MOTOR_MODE_SPEED) {
 			foc_speedloop_init(foc);
 		}
-
 		feedback_calibration(mcfg->feedback);
 		obj->chState = RUNING;
 		break;
@@ -121,9 +119,11 @@ fsm_rt_t motor_stop_state(fsm_cb_t *obj)
 	const struct device *motor = obj->p1;
 	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
 	const struct device *svpwm = ((const struct motor_config *)motor->config)->pwm;
+	struct motor_data *m_data = motor->data;
 
 	switch (obj->chState) {
 	case ENTER:
+		m_data->statue = MOTOR_STATE_STOP;
 		foc_posloop_deinit(foc);
 		svpwm_disable_threephase_channle(svpwm);
 		break;
@@ -145,9 +145,11 @@ fsm_rt_t motor_falut_state(fsm_cb_t *obj)
 	const struct device *motor = obj->p1;
 	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
 	const struct device *svpwm = ((const struct motor_config *)motor->config)->pwm;
+	struct motor_data *m_data = motor->data;
 
 	switch (obj->chState) {
 	case ENTER:
+		m_data->statue = MOTOR_STATE_FAULT;
 		foc_posloop_deinit(foc);
 		svpwm_disable_threephase_channle(svpwm);
 		break;
@@ -166,8 +168,11 @@ fsm_rt_t motor_idle_state(fsm_cb_t *obj)
 	enum {
 		RUNING = USER_STATUS,
 	};
+	const struct device *motor = obj->p1;
+	struct motor_data *m_data = motor->data;
 	switch (obj->chState) {
 	case ENTER:
+		m_data->statue = MOTOR_STATE_IDLE;
 		break;
 	case RUNING:
 		break;

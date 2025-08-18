@@ -142,7 +142,17 @@ enum motor_state motor_get_state(const struct device *motor)
 	const struct motor_data *mdata = motor->data;
 	return mdata->statue;
 }
-
+void motor_set_falutstate(const struct device *motor, enum motor_fault_code code)
+{
+	struct motor_data *m_data = motor->data;
+	m_data->faultcode = code;
+	return;
+}
+enum motor_fault_code motor_get_falutcode(const struct device *motor)
+{
+	struct motor_data *m_data = motor->data;
+	return m_data->faultcode;
+}
 void motor_set_target_speed(const struct device *motor, float target)
 {
 	const struct motor_config *mcfg = motor->config;

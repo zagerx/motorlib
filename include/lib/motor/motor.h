@@ -25,7 +25,11 @@ enum motor_state {
 	MOTOR_STATE_STOP,		// 受控停止状态
 	MOTOR_STATE_EMERGENCY		// 紧急停止状态
 };
-
+enum motor_fault_code {
+	MOTOR_FAULTCODE_NOERR = 0,
+	MOTOR_FAULTCODE_OVERCURRMENT,
+	MOTOR_FAULTCODE_UNDERVOL,
+};
 enum motor_mode {
 	MOTOR_MODE_SPEED = 1,
 	MOTOR_MODE_POSI,
@@ -37,6 +41,7 @@ enum motor_mode {
 struct motor_data {
 	enum motor_mode mode;
 	enum motor_state statue;
+	enum motor_fault_code faultcode;
 	fsm_cb_t *mode_state_mec;
 };
 
