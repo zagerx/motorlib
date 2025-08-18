@@ -4,3 +4,11 @@ config FEEDBACK_LOG_LEVEL
 	range 0 4
 	help
 	  Set log level for feedback driver.
+
+config FEEDBACK_INIT_PRIORITY
+        int "Feedback sensor initialization priority"
+        range 0 97  
+        default 97
+        help
+          Initialization priority for motor feedback sensors (encoders/hall).
+          Must initialize before FOC/motor control.

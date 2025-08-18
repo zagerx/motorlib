@@ -4,3 +4,11 @@ config CURRSMP_SHUNT_LOG_LEVEL
 	range 0 4
 	help
 	  Set log level for shunt current sampling driver.
+
+config CURRSMP_INIT_PRIORITY
+        int "Current sampling initialization priority"
+        range 0 95
+        default 95
+        help
+          Initialization priority for current sampling devices.
+          Must initialize before FOC algorithms.
