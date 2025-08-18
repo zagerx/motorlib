@@ -1,0 +1,6 @@
+config FEEDBACK_LOG_LEVEL
+	int "Feedback log level"
+	default 1
+	range 0 4
+	help
+	  Set log level for feedback driver.

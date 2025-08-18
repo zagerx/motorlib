@@ -1,0 +1,4 @@
+rsource "currsmp/Kconfig.currsmp" 
+rsource "feedback/Kconfig.feedback" 
+rsource "pwm/Kconfig.pwm" 
+

@@ -7,7 +7,6 @@
 #include <math.h>
 #include <stdint.h>
 #include <sys/_intsup.h>
-#include <zephyr/logging/log.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/adc.h>
 #include <zephyr/irq.h>
@@ -16,7 +15,11 @@
 #include <stm32h7xx_ll_gpio.h>
 #include <drivers/currsmp.h>
 #include <filter.h>
-LOG_MODULE_REGISTER(currsmp_shunt_stm32, LOG_LEVEL_DBG);
+
+#define LOG_LEVEL CONFIG_MOTOR_LIB_LOG_LEVEL
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(currsmp_shunt_stm32);
+
 #define DT_DRV_COMPAT st_stm32_currsmp_shunt
 
 /** @brief Configuration structure for STM32 shunt current sampling driver. */
@@ -318,8 +321,7 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 			;
 		LL_ADC_DisableIT_JEOS(ADC2);
 	}
-	LOG_INF("currsmp_shunt_stm32_init");
-
+	LOG_DBG("currsmp_shunt_stm32_init");
 	/*filter init*/
 	struct currsmp_shunt_stm32_data *data = dev->data;
 	moving_avg_init(data->average_filter, NULL, 0);

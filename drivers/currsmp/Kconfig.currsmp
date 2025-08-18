@@ -1,0 +1,6 @@
+config CURRSMP_SHUNT_LOG_LEVEL
+	int "Shunt Current Sampling log level"
+	default 1
+	range 0 4
+	help
+	  Set log level for shunt current sampling driver.

@@ -1,0 +1,7 @@
+rsource "drivers/Kconfig.drivers" 
+config MOTOR_LIB_LOG_LEVEL
+	int "Motor lib log level"
+	default 1
+	range 0 4
+	help
+	  Set log level for motor lib.

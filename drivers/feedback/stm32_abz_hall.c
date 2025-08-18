@@ -26,7 +26,9 @@
 #include <stm32_ll_tim.h>
 #include <lib/motor/motor_Parameter.h>
 
-LOG_MODULE_REGISTER(abz_hall_stm32, LOG_LEVEL_DBG);
+#define LOG_LEVEL CONFIG_MOTOR_LIB_LOG_LEVEL
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(abz_hall_stm32);
 
 #define ABZ_ENCODER_LINES_X2 (ABZ_ENCODER_LINES * 2)
 
@@ -213,7 +215,7 @@ static void abz_hall_stm32_enable(const struct device *dev)
 {
 	const struct abz_hall_stm32_config *cfg = dev->config;
 	uint8_t ret;
-	LOG_INF("device name: %s", dev->name);
+	LOG_DBG("device name: %s", dev->name);
 	LL_TIM_EnableCounter(cfg->timer);
 	ret = gpio_pin_interrupt_configure_dt(&cfg->hu_gpio, GPIO_INT_EDGE_BOTH);
 	ret |= gpio_pin_interrupt_configure_dt(&cfg->hv_gpio, GPIO_INT_EDGE_BOTH);
@@ -355,7 +357,7 @@ static int stm32_abz_hall_init(const struct device *dev)
 {
 	abz_stm32_init(dev);
 	hall_stm32_init(dev);
-	LOG_INF("stm32_abz_hall_init Finish");
+	LOG_DBG("stm32_abz_hall_init Finish");
 	return 0;
 }
 

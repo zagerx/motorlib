@@ -16,7 +16,10 @@
 #include <zephyr/logging/log.h>
 #include <zephyr/drivers/gpio.h>
 
-LOG_MODULE_REGISTER(motor_state, LOG_LEVEL_DBG);
+#define LOG_LEVEL CONFIG_MOTOR_LIB_LOG_LEVEL
+#include <zephyr/logging/log.h>
+LOG_MODULE_REGISTER(motor_state);
+
 #define MOT12_BRK_PIN_NODE DT_NODELABEL(mot12_brk_pin)
 
 fsm_rt_t motor_ready_state(fsm_cb_t *obj);
@@ -37,11 +40,10 @@ fsm_rt_t motor_init_state(fsm_cb_t *obj)
 	switch (obj->chState) {
 	case ENTER:
 		m_data->statue = MOTOR_STATE_INIT;
-		LOG_INF("motor_init_state   curmode:%d", m_data->mode);
+		LOG_DBG("motor_init_state   curmode:%d", m_data->mode);
 		if (m_data->mode == MOTOR_MODE_POSI) {
 			foc_posloop_init(foc);
 		} else if (m_data->mode == MOTOR_MODE_SPEED) {
-			LOG_INF("SPEED MODE init");
 			foc_speedloop_init(foc);
 		}
 
@@ -136,6 +138,30 @@ fsm_rt_t motor_stop_state(fsm_cb_t *obj)
 	return 0;
 }
 fsm_rt_t motor_falut_state(fsm_cb_t *obj)
+{
+	enum {
+		RUNING = USER_STATUS,
+	};
+	const struct device *motor = obj->p1;
+	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
+	const struct device *svpwm = ((const struct motor_config *)motor->config)->pwm;
+
+	switch (obj->chState) {
+	case ENTER:
+		foc_posloop_deinit(foc);
+		svpwm_disable_threephase_channle(svpwm);
+		break;
+	case RUNING:
+		break;
+	case EXIT:
+		break;
+	default:
+		break;
+	}
+
+	return 0;
+}
+fsm_rt_t motor_idle_state(fsm_cb_t *obj)
 {
 	enum {
 		RUNING = USER_STATUS,

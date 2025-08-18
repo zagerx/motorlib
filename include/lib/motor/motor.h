@@ -34,18 +34,6 @@ enum motor_mode {
 	MOTOR_MODE_IDLE
 };
 
-enum motor_cmd {
-	MOTOR_CMD_SET_SPEED_MODE = USER_SIG, // 进入速度模式
-	MOTOR_CMD_SET_POSTION_MODE,
-	MOTOR_CMD_SET_TORQUE_MODE,
-	MOTOR_CMD_SET_ENABLE,
-	MOTOR_CMD_SET_DISABLE,
-	MOTOR_CMD_SET_SPEED, // 设置速度
-	MOTOR_CMD_SET_START,
-	MOTOR_CMD_SET_PIDPARAM,
-	MOTOR_CMD_SET_VOLFAULT,
-	MOTOR_CMD_SET_IDLE
-};
 struct motor_data {
 	enum motor_mode mode;
 	enum motor_state statue;
@@ -55,7 +43,7 @@ struct motor_data {
 enum motor_mode motor_get_mode(const struct device *motor);
 enum motor_state motor_get_state(const struct device *motor);
 void motor_set_mode(const struct device *motor, enum motor_mode mode);
-void motor_set_state(const struct device *motor, enum motor_cmd sig);
+void motor_set_state(const struct device *motor, enum motor_state state);
 float motor_get_current_position(const struct device *motor);
 void motor_get_bus_voltage_current(const struct device *motor, float *bus_vol, float *bus_curr);
 void motor_set_target_position(const struct device *motor, float start, float target,

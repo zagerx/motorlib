@@ -45,6 +45,8 @@ extern fsm_rt_t motor_init_state(fsm_cb_t *obj);
 extern fsm_rt_t motor_ready_state(fsm_cb_t *obj);
 extern fsm_rt_t motor_runing_state(fsm_cb_t *obj);
 extern fsm_rt_t motor_stop_state(fsm_cb_t *obj);
+extern fsm_rt_t motor_idle_state(fsm_cb_t *obj);
+extern fsm_rt_t motor_falut_state(fsm_cb_t *obj);
 
 /**
  * @brief FOC current regulator callback
@@ -118,17 +120,21 @@ enum motor_mode motor_get_mode(const struct device *motor)
 	const struct motor_data *mdata = motor->data;
 	return mdata->mode;
 }
-void motor_set_state(const struct device *motor, enum motor_cmd sig)
+void motor_set_state(const struct device *motor, enum motor_state state)
 {
 	const struct motor_data *m_data = motor->data;
 	fsm_cb_t *sub_sm = m_data->mode_state_mec->sub_state_machine;
 
-	if (sig == MOTOR_CMD_SET_ENABLE) {
+	if (state == MOTOR_STATE_READY) {
 		TRAN_STATE(sub_sm, motor_ready_state);
-	} else if (sig == MOTOR_CMD_SET_START) {
+	} else if (state == MOTOR_STATE_CLOSED_LOOP) {
 		TRAN_STATE(sub_sm, motor_runing_state);
-	} else if (sig == MOTOR_CMD_SET_DISABLE) {
+	} else if (state == MOTOR_STATE_STOP) {
 		TRAN_STATE(sub_sm, motor_stop_state);
+	} else if (state == MOTOR_STATE_IDLE) {
+		TRAN_STATE(sub_sm, motor_idle_state);
+	} else if (state == MOTOR_STATE_FAULT) {
+		TRAN_STATE(sub_sm, motor_falut_state);
 	}
 }
 enum motor_state motor_get_state(const struct device *motor)

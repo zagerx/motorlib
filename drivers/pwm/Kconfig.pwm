@@ -1,0 +1,6 @@
+config PWM_LOG_LEVEL
+	int "Pwm log level"
+	default 1
+	range 0 4
+	help
+	  Set log level for pwm driver.
