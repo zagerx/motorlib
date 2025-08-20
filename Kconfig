@@ -1,3 +1,9 @@
+config MOTORLIB_ENABLE
+    bool "Enable motor library"
+    default n  # 默认禁用
+    help
+      Enable motor control library
+      
 config MOTOR_LIB_LOG_LEVEL
 	int "Motor lib log level"
 	default 1
