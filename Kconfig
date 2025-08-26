@@ -1,35 +1,3 @@
-config MOTORLIB_ENABLE
-    bool "Enable motor library"
-    default n  # 默认禁用
-    help
-      Enable motor control library
-      
-config MOTOR_LIB_LOG_LEVEL
-	int "Motor lib log level"
-	default 1
-	range 0 4
-	help
-	  Set log level for motor lib.
-
-config MOTOR_INIT_PRIORITY
-	int "Motor control device initialization priority"
-	range 0 99
-	default 99
-	help
-	  Initialization priority for motor control devices (lower value = earlier init).
-	  Must be higher than dependent devices (FOC/PWM/Feedback).
-
-config FOC_INIT_PRIORITY
-	int "FOC algorithm initialization priority" 
-	range 0 98
-	default 98
-	help
-	  Initialization priority for FOC control algorithms.
-	  Must be higher than PWM/current sampling devices.
-
-config MOTOR_SUPER_ABZHALL_400W
-	bool "SPUER_400 (400W brushless)"
-	help
-	  400W brushless motor with encoder
 
 rsource "drivers/Kconfig.drivers"
+rsource "lib/Kconfig"

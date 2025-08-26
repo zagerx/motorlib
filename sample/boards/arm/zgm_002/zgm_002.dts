@@ -1,0 +1,94 @@
+/*
+ * Copyright (c) 2020 Alexander Kozhinov <ak.alexander.kozhinov@gmail.com>
+ * SPDX-License-Identifier: Apache-2.0
+ */
+
+/dts-v1/;
+#include <st/h7/stm32h723Xg.dtsi>
+#include <st/h7/stm32h723vgtx-pinctrl.dtsi>
+
+/*
+ * WARNING:
+ * JP6 and SB72 must be ON when using Ethernet.
+ */
+
+/ {
+	model = "STMicroelectronics STM32H723ZG-NUCLEO board";
+	compatible = "st,stm32h723zg-nucleo";
+
+	chosen {
+		zephyr,console = &usart1;
+		zephyr,shell-uart = &usart1;
+		zephyr,dtcm = &dtcm;
+		zephyr,sram = &sram0;
+		zephyr,flash = &flash0;
+		zephyr,canbus = &fdcan1;
+	};
+};
+
+&clk_lsi {
+	status = "okay";
+};
+
+&clk_hsi48 {
+	status = "okay";
+};
+
+&clk_hse {
+	clock-frequency = <DT_FREQ_M(12)>; /* STLink 12MHz clock */
+	status = "okay";
+};
+
+&clk_lse {
+	status = "disabled";
+};
+
+&pll {
+	div-m = <6>;
+	mul-n = <275>;
+	div-p = <1>;
+	div-q = <4>;
+	div-r = <2>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&pll2 {
+	div-m = <1>;
+	mul-n = <10>;
+	div-p = <1>;
+	div-q = <1>;
+	div-r = <1>;
+	clocks = <&clk_hse>;
+	status = "okay";
+};
+
+&rcc {
+	clocks = <&pll>;
+	clock-frequency = <DT_FREQ_M(550)>;
+	d1cpre = <1>;
+	hpre = <2>;    /* HCLK: 275   MHz */
+	d1ppre = <2>;  /* APB1: 137.5 MHz */
+	d2ppre1 = <2>; /* APB2: 137.5 MHz */
+	d2ppre2 = <2>; /* APB3: 137.5 MHz */
+	d3ppre = <2>;  /* APB4: 137.5 MHz */
+};
+
+&usart1 {
+	pinctrl-0 = <&usart1_tx_pa9 &usart1_rx_pa10>;
+	pinctrl-names = "default";
+	current-speed = <115200>;
+	status = "okay";
+};
+
+&backup_sram {
+	status = "okay";
+};
+
+&fdcan1 {
+	pinctrl-0 = <&fdcan1_rx_pa11 &fdcan1_tx_pa12>;
+	pinctrl-names = "default";
+	clocks = <&rcc STM32_CLOCK_BUS_APB1_2 0x00000100>,
+		 <&rcc STM32_SRC_PLL2_Q FDCAN_SEL(2)>;
+	status = "okay";
+};
