@@ -12,3 +12,9 @@ config FEEDBACK_INIT_PRIORITY
         help
           Initialization priority for motor feedback sensors (encoders/hall).
           Must initialize before FOC/motor control.
+
+config ENCODER_TYPE_ABS
+    bool "Encoder type"
+    default n  # 默认禁用
+    help
+      Enable motor control library

@@ -11,7 +11,7 @@
 #include "stm32h7xx_ll_tim.h"
 #include <sys/_intsup.h>
 #include <sys/_stdint.h>
-#define DT_DRV_COMPAT st_stm32_abz_hall
+#define DT_DRV_COMPAT encoder_abz_hall
 
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <zephyr/drivers/gpio.h>

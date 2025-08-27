@@ -4,6 +4,9 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 set(BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+#set(DTC_OVERLAY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../drivers/drivers@0.1.overlay)
+set(DTC_OVERLAY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../drivers/drivers@0.2.overlay)
+
 get_filename_component(MODULES_BASE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../.." ABSOLUTE)
 
 # 添加Zephyr外部模块

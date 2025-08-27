@@ -1,0 +1,105 @@
+/* 必须有根节点 /，然后把要修改/新增的内容写在里面 */
+/ {
+	/* 统一把 motors 放在根节点下，避免散落在各处 */
+	motors {
+		motor0: motor_0 {
+			compatible = "motor-bldc";
+			control-algorithm = <&foc0>;
+			feedback = <&encoder0>;
+			currsmp  = <&currsmp0>;
+			pwm      = <&pwm1>;
+			status   = "okay";
+		};
+
+		motor1: motor_1 {
+			compatible = "motor-bldc";
+			control-algorithm = <&foc1>;
+			feedback = <&abz_hall1>;
+			currsmp  = <&currsmp1>;
+			pwm      = <&pwm8>;
+			status   = "disabled";
+		};
+	};
+
+	control_algorithm {
+		foc0: ctrl_algo0 {
+			compatible = "foc-ctrl-algo";
+			modulate = <1>;
+			status   = "okay";
+		};
+
+		foc1: ctrl_algo1 {
+			compatible = "foc-ctrl-algo";
+			modulate = <0>;
+			status   = "okay";
+		};
+	};
+};
+
+/* 以下全部是“追加/覆盖”已存在的外设节点，用 &label {} 语法 */
+&timers1 {
+	pwm1: pwm {
+		compatible = "st,stm32-pwm-custom";
+		pinctrl-0 = <&tim1_ch1_pe9  &tim1_ch1n_pe8
+			     &tim1_ch2_pe11 &tim1_ch2n_pe10
+			     &tim1_ch3_pe13 &tim1_ch3n_pe12>;
+		pinctrl-names = "default";
+		timing-params = <120 13750 0>;
+		slave = <0>;
+		status = "okay";
+	};
+};
+
+&timers8 {
+	pwm8: pwm {
+		compatible = "st,stm32-pwm-custom";
+		pinctrl-0 = <&tim8_ch1_pc6 &tim8_ch1n_pa7
+			     &tim8_ch2_pc7 &tim8_ch2n_pb14
+			     &tim8_ch3_pc8 &tim8_ch3n_pb15>;
+		pinctrl-names = "default";
+		timing-params = <120 13750 0>;
+		slave = <1>;
+		status = "okay";
+	};
+};
+
+&spi2 {
+	status = "okay";                       /* 启用外设 */
+	pinctrl-0 = <&spi1_sck_pa5             /* 根据实际布线，可改成 PB3/PB10 等 */
+		     &spi1_miso_pa6
+		     &spi1_mosi_pa7>;
+	pinctrl-names = "default";
+	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>; /* 软件片选脚 PA4 */
+
+	encoder0: as5047@0 {
+		compatible = "ams,as5047p";
+		reg = <0>;
+		spi-max-frequency = <10000000>;
+		resolution = <14>;   /* 14bit = 16383/圈，等效 4096 线 */
+		status = "okay";
+	};
+};
+
+&adc1 {
+	currsmp0: currsmp {
+		compatible = "st,stm32-currsmp-shunt";
+		pinctrl-0 = <&adc1_inp15_pa3 &adc1_inp4_pc4
+			     &adc1_inp16_pa0 &adc1_inp17_pa1
+			     &adc1_inp14_pa2>;
+		pinctrl-names = "default";
+		adc-channels = <15 4 16 17 14>;
+		adc-slave = <0>;
+		status = "okay";
+	};
+};
+
+&adc2 {
+	currsmp1: currsmp {
+		compatible = "st,stm32-currsmp-shunt";
+		pinctrl-0 = <&adc2_inp8_pc5 &adc2_inp9_pb0 &adc2_inp5_pb1>;
+		pinctrl-names = "default";
+		adc-channels = <8 9 5>;
+		adc-slave = <1>;
+		status = "okay";
+	};
+};
