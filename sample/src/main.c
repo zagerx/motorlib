@@ -12,7 +12,8 @@
 LOG_MODULE_REGISTER(motor_sample);
 int main(void)
 {
-	// 主处理循环
+	LOG_DBG("hello world");
 	while (true) {
+		k_msleep(1000);
 	}
 }

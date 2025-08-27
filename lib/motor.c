@@ -20,7 +20,6 @@
 #include <stdint.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-
 /* Local includes */
 #include <lib/foc/focutils.h>
 #include <lib/motor/motor.h>

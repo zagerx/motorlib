@@ -1,3 +1,33 @@
+#// clang-format off
 
+
+config MOTORLIB_ENABLE
+    bool "Enable motor library"
+    default n  # 默认禁用
+    help
+      Enable motor control library
+
+if MOTORLIB_ENABLE         
+	config CMSIS_DSP
+		bool
+		default y
+	config CMSIS_DSP_BASICMATH
+		bool
+		default y
+	config CMSIS_DSP_CONTROLLER
+		bool
+		default y
+	config CMSIS_DSP_FASTMATH
+		bool
+		default y
+	config COMMONLIBRARY_ENABLE
+		bool
+		default y
+endif # MOTORLIB_ENABLE      
+      
+      
 rsource "drivers/Kconfig.drivers"
 rsource "lib/Kconfig"
+
+
+#// clang-format on

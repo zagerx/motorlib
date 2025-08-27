@@ -1,8 +1,4 @@
-config MOTORLIB_ENABLE
-    bool "Enable motor library"
-    default n  # 默认禁用
-    help
-      Enable motor control library
+
       
 config MOTOR_LIB_LOG_LEVEL
 	int "Motor lib log level"
@@ -29,5 +25,7 @@ config FOC_INIT_PRIORITY
 
 config MOTOR_SUPER_ABZHALL_400W
 	bool "SPUER_400 (400W brushless)"
+	depends on MOTORLIB_ENABLE      
+	default y if MOTORLIB_ENABLE   
 	help
 	  400W brushless motor with encoder

@@ -1,1 +1,4 @@
 build/
+.cache/
+jlink.jlink
+makefile
