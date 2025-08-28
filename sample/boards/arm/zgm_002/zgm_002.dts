@@ -53,10 +53,6 @@
 			gpios = <&gpiod 4 GPIO_ACTIVE_HIGH>;
 			label = "User LD6";
 		};
-		run_led: led_6 {
-			gpios = <&gpio_exp0 9 GPIO_ACTIVE_HIGH>;
-			label = "User LD7";
-		};	
 	};
 
 	aliases {
@@ -132,32 +128,4 @@
 	clocks = <&rcc STM32_CLOCK_BUS_APB1_2 0x00000100>,
 		 <&rcc STM32_SRC_PLL2_Q FDCAN_SEL(2)>;
 	status = "okay";
-};
-&i2c2 {
-	pinctrl-0 = <&i2c2_scl_pb10 &i2c2_sda_pb11>;
-	pinctrl-names = "default";
-	status = "okay";
-	clock-frequency = <I2C_BITRATE_FAST>;
-
-	ina226@40 {
-		compatible = "ti,ina226";
-		reg = <0x40>;
-		
-		current-lsb-microamps = <610>;
-		rshunt-micro-ohms = <2000>;
-		
-		/* 优化配置 */
-		avg-count = <16>;
-		vbus-conversion-time-us = <1100>;
-		vshunt-conversion-time-us = <1100>;
-		operating-mode = "Shunt and Bus, Continuous";
-	};
-	gpio_exp0: tca9539@74 {
-		compatible = "ti,tca9539";
-		reg = <0x74>;
-		gpio-controller;
-		#gpio-cells = <2>;
-		ngpios = <16>;
-		status = "okay";
-	};	
 };

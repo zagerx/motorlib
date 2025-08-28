@@ -5,20 +5,12 @@
 		motor0: motor_0 {
 			compatible = "motor-bldc";
 			control-algorithm = <&foc0>;
-			feedback = <&encoder0>;
+			feedback = <&super_400w_lun0>;
 			currsmp  = <&currsmp0>;
 			pwm      = <&pwm1>;
 			status   = "okay";
 		};
 
-		motor1: motor_1 {
-			compatible = "motor-bldc";
-			control-algorithm = <&foc1>;
-			feedback = <&abz_hall1>;
-			currsmp  = <&currsmp1>;
-			pwm      = <&pwm8>;
-			status   = "disabled";
-		};
 	};
 
 	control_algorithm {
@@ -32,6 +24,13 @@
 			compatible = "foc-ctrl-algo";
 			modulate = <0>;
 			status   = "okay";
+		};
+	};
+	userencoder{
+		encoder0:motorencoder{
+			compatible = "st-encoder";
+			encoder = <&super_400w_lun0>;
+			status   = "disabled";
 		};
 	};
 };
@@ -63,6 +62,20 @@
 	};
 };
 
+&timers4 {
+	super_400w_lun0: super_400w_lun {
+		compatible = "st,abz-hall";
+		pinctrl-0 = <&tim4_ch1_pb6 &tim4_ch2_pb7>;
+		pinctrl-names = "default";
+		lines       = <4096>;
+		pole-pairs  = <15>;
+		hu-gpios    = <&gpiod 1 GPIO_ACTIVE_HIGH>;
+		hv-gpios    = <&gpiob 2 GPIO_ACTIVE_HIGH>;
+		hw-gpios    = <&gpiod 0 GPIO_ACTIVE_HIGH>;
+		status      = "okay";
+	};
+};
+
 &spi2 {
 	status = "okay";                       /* 启用外设 */
 	pinctrl-0 = <&spi1_sck_pa5             /* 根据实际布线，可改成 PB3/PB10 等 */
@@ -71,11 +84,10 @@
 	pinctrl-names = "default";
 	cs-gpios = <&gpioa 4 GPIO_ACTIVE_LOW>; /* 软件片选脚 PA4 */
 
-	encoder0: as5047@0 {
-		compatible = "ams,as5047p";
+	as50470: as5047@0 {
+		compatible = "ams,as5047";
 		reg = <0>;
-		spi-max-frequency = <10000000>;
-		resolution = <14>;   /* 14bit = 16383/圈，等效 4096 线 */
+		spi-max-frequency = <1000000>;
 		status = "okay";
 	};
 };
