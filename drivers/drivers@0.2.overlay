@@ -27,10 +27,10 @@
 		};
 	};
 	userencoder{
-		encoder0:motorencoder{
-			compatible = "st-encoder";
-			encoder = <&super_400w_lun0>;
-			status   = "disabled";
+		encoder0:feedback{
+			compatible = "st-feedback";
+			feedback = <&as50470>;
+			status   = "okay";
 		};
 	};
 };
@@ -88,7 +88,7 @@
 		compatible = "ams,as5047";
 		reg = <0>;
 		spi-max-frequency = <1000000>;
-		status = "okay";
+		status = "disabled";
 	};
 };
 

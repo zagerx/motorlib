@@ -6,12 +6,12 @@
  * - Hall sensor position detection
  * - Speed calculation
  */
+#define DT_DRV_COMPAT st_feedback
 
 #include "zephyr/device.h"
 #include "stm32h7xx_ll_tim.h"
 #include <sys/_intsup.h>
 #include <sys/_stdint.h>
-#define DT_DRV_COMPAT ams_as5047
 
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <zephyr/drivers/gpio.h>

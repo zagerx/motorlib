@@ -29,6 +29,8 @@
 #include <drivers/feedback.h>
 #include <statemachine.h>
 #include <lib/motor/motor_internal.h>
+#include <lib/motor/motor_Parameter.h>
+
 /* Device tree compatibility string */
 #define DT_DRV_COMPAT motor_bldc
 
@@ -84,11 +86,24 @@ static void foc_curr_regulator(void *ctx)
 
 	float d_out, q_out;
 	if (motor_get_state(dev) == MOTOR_STATE_CLOSED_LOOP) {
+#if CONFIG_MOTOR_DEBUG_MODE
+		static float debug_eangle = 0.0f;
+		d_out = 0.0f;
+		q_out = MOTOR_DEBUG_IQ;
+		if (debug_eangle > 360.0f) {
+			debug_eangle = 0.0f;
+		} else {
+			debug_eangle += MOTOR_DEBUG_SELFANGLE;
+		}
+		sin_cos_f32(((debug_eangle)), &sin_the, &cos_the);
+		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
+#else
 		d_out = pid_contrl((pid_cb_t *)(&data->id_pid), 0.0f, data->i_d);
 		q_out = pid_contrl((pid_cb_t *)(&data->iq_pid), data->iq_ref, data->i_q);
 		svm_apply_voltage_limiting(foc, &d_out, &q_out, data->bus_vol);
 		sin_cos_f32(((data->eangle)), &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
+#endif
 	} else {
 		d_out = 0.0f;
 		q_out = 0.00f;

@@ -6,6 +6,4 @@
 zephyr_library_sources(stm32_abz_hall.c)
 
 
-if(CONFIG_ENCODER_TYPE_ABS)
-	zephyr_library_sources(stm32_as5047.c)
-endif()
+zephyr_library_sources(feedback.c)
