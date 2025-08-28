@@ -26,13 +26,6 @@
 			status   = "okay";
 		};
 	};
-	userencoder{
-		encoder0:feedback{
-			compatible = "st-feedback";
-			feedback = <&as50470>;
-			status   = "okay";
-		};
-	};
 };
 
 /* 以下全部是“追加/覆盖”已存在的外设节点，用 &label {} 语法 */
@@ -88,7 +81,7 @@
 		compatible = "ams,as5047";
 		reg = <0>;
 		spi-max-frequency = <1000000>;
-		status = "disabled";
+		status = "okay";
 	};
 };
 

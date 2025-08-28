@@ -13,7 +13,7 @@ config FEEDBACK_INIT_PRIORITY
           Initialization priority for motor feedback sensors (encoders/hall).
           Must initialize before FOC/motor control.
 
-config ENCODER_TYPE_ABS
+config ENCODER_TYPE_AS5047
     bool "Encoder type"
     default n  # 默认禁用
     help

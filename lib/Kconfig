@@ -29,7 +29,6 @@ config MOTOR_SUPER_ABZHALL_400W
 	default y if MOTORLIB_ENABLE   
 	help
 	  400W brushless motor with encoder
-	  
 config MOTOR_DEBUG_MODE
 	bool "DEBUG mode"
 	default n 
