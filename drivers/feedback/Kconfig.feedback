@@ -13,6 +13,13 @@ config FEEDBACK_INIT_PRIORITY
           Initialization priority for motor feedback sensors (encoders/hall).
           Must initialize before FOC/motor control.
 
+config MOTOR_SUPER_ABZHALL_400W
+	bool "SPUER_400 (400W brushless)"
+	depends on MOTORLIB_ENABLE      
+	default y if MOTORLIB_ENABLE   
+	help
+	  400W brushless motor with encoder
+	  
 config ENCODER_TYPE_AS5047
     bool "Encoder type"
     default n  # 默认禁用

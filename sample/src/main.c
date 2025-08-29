@@ -24,7 +24,7 @@ LOG_MODULE_REGISTER(motor_sample);
 #define ENCODER_VCC	   DT_NODELABEL(encoder_vcc)
 #define W_DOG		   DT_NODELABEL(wdog)
 extern void motor_set_vol(const struct device *motor, float *bus_vol);
-extern void motor_set_falutstate(const struct device *motor, enum motor_fault_code code);
+extern void motor_set_falutcode(const struct device *motor, enum motor_fault_code code);
 extern enum motor_fault_code motor_get_falutcode(const struct device *motor);
 
 int main(void)
@@ -74,18 +74,18 @@ int main(void)
 			if (fmm_readstatus(bus_vol_fmm) == FMM_NORMAL &&
 			    fmm_readstatus(buf_curr_fmm) == FMM_NORMAL) { // 判断是否恢复
 				fault_fsm = 0;
-				motor_set_falutstate(motor0, MOTOR_FAULTCODE_NOERR);
+				motor_set_falutcode(motor0, MOTOR_FAULTCODE_NOERR);
 				motor_set_state(motor0, MOTOR_STATE_IDLE);
 			}
 			break;
 		case 0: // 判断是否有故障
 			if (fmm_readstatus(bus_vol_fmm) == FMM_FAULT) {
 				fault_fsm = 1;
-				motor_set_falutstate(motor0, MOTOR_FAULTCODE_UNDERVOL);
+				motor_set_falutcode(motor0, MOTOR_FAULTCODE_UNDERVOL);
 				motor_set_state(motor0, MOTOR_STATE_FAULT);
 			} else if (fmm_readstatus(buf_curr_fmm) == FMM_FAULT) {
 				fault_fsm = 1;
-				motor_set_falutstate(motor0, MOTOR_FAULTCODE_OVERCURRMENT);
+				motor_set_falutcode(motor0, MOTOR_FAULTCODE_OVERCURRMENT);
 				motor_set_state(motor0, MOTOR_STATE_FAULT);
 			} else {
 			}

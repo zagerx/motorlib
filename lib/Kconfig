@@ -23,12 +23,7 @@ config FOC_INIT_PRIORITY
 	  Initialization priority for FOC control algorithms.
 	  Must be higher than PWM/current sampling devices.
 
-config MOTOR_SUPER_ABZHALL_400W
-	bool "SPUER_400 (400W brushless)"
-	depends on MOTORLIB_ENABLE      
-	default y if MOTORLIB_ENABLE   
-	help
-	  400W brushless motor with encoder
+
 config MOTOR_DEBUG_MODE
 	bool "DEBUG mode"
 	default n 

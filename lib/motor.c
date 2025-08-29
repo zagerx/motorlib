@@ -156,7 +156,7 @@ enum motor_state motor_get_state(const struct device *motor)
 	const struct motor_data *mdata = motor->data;
 	return mdata->statue;
 }
-void motor_set_falutstate(const struct device *motor, enum motor_fault_code code)
+void motor_set_falutcode(const struct device *motor, enum motor_fault_code code)
 {
 	struct motor_data *m_data = motor->data;
 	m_data->faultcode = code;
