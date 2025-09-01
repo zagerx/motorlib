@@ -1,1 +1,6 @@
-source "Kconfig.zephyr"
+#// clang-format off
+source "Kconfig.zephyr" 
+rsource "drivers/gpio/Kconfig.tca9539" 
+
+
+#// clang-format on

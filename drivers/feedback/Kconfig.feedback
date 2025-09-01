@@ -25,3 +25,19 @@ config ENCODER_TYPE_AS5047
     default n  # 默认禁用
     help
       Enable motor control library
+
+config ENCODER_TYPE_TLE5012B
+    bool "Encoder type"
+    default n  # 默认禁用
+    depends on SPI
+    help
+      Enable motor control library      
+
+config USER_USE_STM32_HAL_SPI
+	bool "stm32 hal gpio"
+	select USE_STM32_HAL_SPI_EX
+	select USE_STM32_HAL_SPI
+	select USE_STM32_HAL_GPIO_EX
+	select USE_STM32_HAL_GPIO
+	help
+	   Temp Start STM32 HAL Lib 

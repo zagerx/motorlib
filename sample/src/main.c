@@ -15,17 +15,21 @@
 #include <lib/motor/motor.h>
 #include <fault_monitoring_module.h>
 #include <zephyr/sys/reboot.h>
+#include "drivers/tle5012b.h"
 
 #define LOG_LEVEL LOG_LEVEL_DBG
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(motor_sample);
 
 #define MOT12_BRK_PIN_NODE DT_NODELABEL(mot12_brk_pin)
-#define ENCODER_VCC	   DT_NODELABEL(encoder_vcc)
+// #define ENCODER_VCC	   DT_NODELABEL(encoder_vcc)
 #define W_DOG		   DT_NODELABEL(wdog)
 extern void motor_set_vol(const struct device *motor, float *bus_vol);
 extern void motor_set_falutcode(const struct device *motor, enum motor_fault_code code);
 extern enum motor_fault_code motor_get_falutcode(const struct device *motor);
+extern int tle5012_update(const struct device *dev);
+extern void tle5012b_init(void);
+extern void *tle5012b_read(void);
 
 int main(void)
 {
@@ -48,13 +52,24 @@ int main(void)
 		LOG_ERR("Failed to configure watchdog pin (err %d)", ret);
 	}
 
-	/* Initialize encoder power */
-	const struct gpio_dt_spec encoder_vcc = GPIO_DT_SPEC_GET(ENCODER_VCC, gpios);
-	ret = gpio_pin_configure_dt(&encoder_vcc, GPIO_OUTPUT_ACTIVE);
+/* Initialize encoder power */
+#if DT_NODE_HAS_STATUS(DT_NODELABEL(encoder_vcc), okay)
+	const struct gpio_dt_spec encoder_vcc = GPIO_DT_SPEC_GET(DT_NODELABEL(encoder_vcc), gpios);
+	int ret = gpio_pin_configure_dt(&encoder_vcc, GPIO_OUTPUT_ACTIVE);
 	if (ret < 0) {
-		LOG_ERR("Failed to configure encoder power (err %d)", ret);
+		LOG_ERR("Failed to configure encoder_vcc power (err %d)", ret);
 	}
+#endif
 
+#if DT_NODE_HAS_STATUS(DT_NODELABEL(encoder_3_3v), okay)
+	const struct gpio_dt_spec encoder_3_3v =
+		GPIO_DT_SPEC_GET(DT_NODELABEL(encoder_3_3v), gpios);
+	ret = gpio_pin_configure_dt(&encoder_3_3v, GPIO_OUTPUT_ACTIVE);
+	if (ret < 0) {
+		LOG_ERR("Failed to configure encoder_3_3v power (err %d)", ret);
+	}
+	gpio_pin_set_dt(&encoder_3_3v, 1);
+#endif
 	float bus_volcurur[2];
 	fmm_t *bus_vol_fmm = cfg->fault[0];
 	fmm_t *buf_curr_fmm = cfg->fault[1];
@@ -62,7 +77,26 @@ int main(void)
 	fmm_init(buf_curr_fmm, 5.0f, 0.0f, 5, 5, NULL);
 
 	static int16_t fault_fsm = 0;
+	static uint32_t conut = 0;
+	// const struct device *tle5012b = DEVICE_DT_GET(DT_NODELABEL(tle5012b0));
+	tle5012b_init();
+	k_msleep(2000);
+	// struct tle5012b_data data;
+	// tle5012b_init(tle5012b);
+	// if (!device_is_ready(tle5012b)) {
+	// 	printk("TLE5012B device not ready\n");
+	// }
 	while (1) {
+		if (conut++ > 500) {
+			tle5012b_read();
+			// int ret = tle5012b_get_data(tle5012b, &data);
+			// if (ret == 0) {
+			// printk("Angle: raw=%d, converted=%d\n", data.rawdata, data.covdata);
+			// } else {
+			// printk("Failed to read data: %d\n", ret);
+			// }
+			conut = 0;
+		}
 		motor_get_bus_voltage_current(motor0, &bus_volcurur[0], &bus_volcurur[1]);
 		motor_set_vol(motor0, bus_volcurur);
 

@@ -4,6 +4,8 @@
 cmake_minimum_required(VERSION 3.20.0)
 
 set(BOARD_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+#set(DTS_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
+
 #set(DTC_OVERLAY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../drivers/drivers@0.1.overlay)
 set(DTC_OVERLAY_FILE ${CMAKE_CURRENT_SOURCE_DIR}/../drivers/drivers@0.2.overlay)
 
@@ -18,6 +20,7 @@ list(APPEND ZEPHYR_EXTRA_MODULES
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 project(motor_app)
 
+add_subdirectory(drivers/gpio)
 
 target_sources(app PRIVATE
     src/main.c
