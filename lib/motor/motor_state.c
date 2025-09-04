@@ -34,7 +34,7 @@ fsm_rt_t motor_init_state(fsm_cb_t *obj)
 	const struct device *motor = obj->p1;
 	struct motor_data *m_data = motor->data;
 
-	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
+	const struct device *foc = ((const struct motor_data *)motor->data)->foc_dev;
 	const struct motor_config *mcfg = motor->config;
 
 	switch (obj->chState) {
@@ -89,7 +89,7 @@ fsm_rt_t motor_runing_state(fsm_cb_t *obj)
 		RUNING = USER_STATUS,
 	};
 	const struct device *motor = obj->p1;
-	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
+	const struct device *foc = ((const struct motor_data *)motor->data)->foc_dev;
 	struct motor_data *m_data = motor->data;
 
 	switch (obj->chState) {
@@ -117,7 +117,7 @@ fsm_rt_t motor_stop_state(fsm_cb_t *obj)
 		RUNING = USER_STATUS,
 	};
 	const struct device *motor = obj->p1;
-	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
+	const struct device *foc = ((const struct motor_data *)motor->data)->foc_dev;
 	const struct device *svpwm = ((const struct motor_config *)motor->config)->pwm;
 	struct motor_data *m_data = motor->data;
 
@@ -143,7 +143,7 @@ fsm_rt_t motor_falut_state(fsm_cb_t *obj)
 		RUNING = USER_STATUS,
 	};
 	const struct device *motor = obj->p1;
-	const struct device *foc = ((const struct motor_config *)motor->config)->foc_dev;
+	const struct device *foc = ((const struct motor_data *)motor->data)->foc_dev;
 	const struct device *svpwm = ((const struct motor_config *)motor->config)->pwm;
 	struct motor_data *m_data = motor->data;
 

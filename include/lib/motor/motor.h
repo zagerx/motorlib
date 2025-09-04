@@ -4,7 +4,6 @@
 #include <statemachine.h>
 #include <fault_monitoring_module.h>
 struct motor_config {
-	const struct device *foc_dev; // FOC控制算法设备
 	const struct device *currsmp;
 	const struct device *pwm;
 	const struct device *feedback;
@@ -42,6 +41,7 @@ struct motor_data {
 	enum motor_mode mode;
 	enum motor_state statue;
 	enum motor_fault_code faultcode;
+	const struct device *foc_dev; // FOC控制算法设备
 	fsm_cb_t *mode_state_mec;
 };
 

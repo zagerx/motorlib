@@ -66,7 +66,7 @@ static int cmd_motor_set_mode(const struct shell *sh, size_t argc, char **argv)
 
 SHELL_CMD_REGISTER(hello, NULL, "Print hello", cmd_hello);
 SHELL_CMD_REGISTER(mode, NULL, "Motor Set Mode", cmd_motor_set_mode);
-SHELL_CMD_REGISTER(ready, NULL, "Motor Set Ready", cmd_motor_set_ready);
-SHELL_CMD_REGISTER(close, NULL, "Motor Set Close", cmd_motor_set_closeloop);
+SHELL_CMD_REGISTER(r, NULL, "Motor Set Ready", cmd_motor_set_ready);
+SHELL_CMD_REGISTER(c, NULL, "Motor Set Close", cmd_motor_set_closeloop);
 SHELL_CMD_REGISTER(speed, NULL, "Motor Set Speed", cmd_motor_set_speed);
-SHELL_CMD_REGISTER(stop, NULL, "Motor Set Stop", cmd_motor_set_disable);
+SHELL_CMD_REGISTER(s, NULL, "Motor Set Stop", cmd_motor_set_disable);

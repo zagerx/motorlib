@@ -64,7 +64,9 @@ static void foc_curr_regulator(void *ctx)
 	struct motor_config *cfg = (struct motor_config *)dev->config;
 	struct device *currsmp = (struct device *)cfg->currsmp;
 
-	const struct device *foc = cfg->foc_dev;
+	struct motor_data *m_data = dev->data;
+	const struct device *foc = m_data->foc_dev;
+
 	struct foc_data *data = foc->data;
 	struct currsmp_curr current_now;
 
@@ -169,27 +171,27 @@ enum motor_fault_code motor_get_falutcode(const struct device *motor)
 }
 void motor_set_target_speed(const struct device *motor, float target)
 {
-	const struct motor_config *mcfg = motor->config;
-	const struct device *devfoc = mcfg->foc_dev;
+	struct motor_data *m_data = motor->data;
+	const struct device *devfoc = m_data->foc_dev;
 	foc_update_target_speed(devfoc, target);
 }
 void motor_set_target_position(const struct device *motor, float start, float target,
 			       float total_time)
 {
-	const struct motor_config *mcfg = motor->config;
-	const struct device *devfoc = mcfg->foc_dev;
+	struct motor_data *m_data = motor->data;
+	const struct device *devfoc = m_data->foc_dev;
 	foc_update_target_position(devfoc, start, target, total_time);
 }
 void motor_set_vol(const struct device *motor, float *bus_vol)
 {
-	const struct motor_config *mcfg = motor->config;
-	const struct device *devfoc = mcfg->foc_dev;
+	struct motor_data *m_data = motor->data;
+	const struct device *devfoc = m_data->foc_dev;
 	foc_update_vbusvolita_cbuscurr(devfoc, bus_vol[0], bus_vol[1]);
 }
 float motor_get_current_position(const struct device *motor)
 {
-	const struct motor_config *mcfg = motor->config;
-	const struct device *devfoc = mcfg->foc_dev;
+	struct motor_data *m_data = motor->data;
+	const struct device *devfoc = m_data->foc_dev;
 	const struct foc_data *fdata = devfoc->data;
 	return fdata->pos_real;
 }
@@ -219,10 +221,11 @@ static int motor_init(const struct device *dev)
 {
 	const struct motor_config *cfg = dev->config;
 	const struct device *currsmp = cfg->currsmp;
-	const struct device *foc = cfg->foc_dev;
+	struct motor_data *m_data = dev->data;
+	const struct device *devfoc = m_data->foc_dev;
 	/* Configure current sampling */
 	currsmp_configure(currsmp, foc_curr_regulator, (void *)dev);
-	foc_init(foc);
+	foc_init(devfoc);
 	return 0;
 }
 
@@ -237,13 +240,13 @@ static int motor_init(const struct device *dev)
 	fmm_t bus_vol_fault_##n;                                                                   \
 	fmm_t bus_curr_fault_##n;                                                                  \
 	static const struct motor_config motor_cfg_##n = {                                         \
-		.foc_dev = DEVICE_DT_GET(DT_INST_PHANDLE(n, control_algorithm)),                   \
 		.pwm = DEVICE_DT_GET(DT_INST_PHANDLE(n, pwm)),                                     \
 		.currsmp = DEVICE_DT_GET(DT_INST_PHANDLE(n, currsmp)),                             \
 		.feedback = DEVICE_DT_GET(DT_INST_PHANDLE(n, feedback)),                           \
 		.fault = {&bus_vol_fault_##n, &bus_curr_fault_##n}};                               \
 	static struct motor_data motor_data_##n = {                                                \
 		.mode_state_mec = &mode_state_machine_##n,                                         \
+		.foc_dev = DEVICE_DT_GET(DT_INST_PHANDLE(n, control_algorithm)),                   \
 	};                                                                                         \
 	DEVICE_DT_INST_DEFINE(n, motor_init, NULL, &motor_data_##n, &motor_cfg_##n, POST_KERNEL,   \
 			      CONFIG_MOTOR_INIT_PRIORITY, NULL);
