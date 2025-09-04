@@ -219,9 +219,10 @@ static int motor_init(const struct device *dev)
 {
 	const struct motor_config *cfg = dev->config;
 	const struct device *currsmp = cfg->currsmp;
-
+	const struct device *foc = cfg->foc_dev;
 	/* Configure current sampling */
 	currsmp_configure(currsmp, foc_curr_regulator, (void *)dev);
+	foc_init(foc);
 	return 0;
 }
 

@@ -126,7 +126,7 @@ float foc_calculate_speed(const struct device *dev, float cur_speed)
  * Initialize FOC device
  * Returns: 0 on success
  */
-static int foc_init(const struct device *dev)
+int foc_init(const struct device *dev)
 {
 	const struct foc_data *data = dev->data;
 	lowfilter_init((lowfilter_t *)&(data->speed_filter), 10.0f);
@@ -143,7 +143,7 @@ static int foc_init(const struct device *dev)
 	static const struct foc_config foc_cfg_##n = {                                             \
 		.modulate = svm_set,                                                               \
 	};                                                                                         \
-	DEVICE_DT_INST_DEFINE(n, &foc_init, NULL, &foc_data_##n, &foc_cfg_##n, POST_KERNEL,        \
+	DEVICE_DT_INST_DEFINE(n, NULL, NULL, &foc_data_##n, &foc_cfg_##n, POST_KERNEL,             \
 			      CONFIG_FOC_INIT_PRIORITY, &foc_api_##n);
 
 /* Initialize all FOC instances */

@@ -6,8 +6,6 @@
 #include <zephyr/drivers/gpio.h>
 #include "stm32h7xx_hal_spi.h"
 #define TLE5012_READ_ANGLE_CMD (0x80)
-// #define 2	(2)
-// #define 4 (4)
 #define TLE5012_TRANS_TIMEOUT  (2)
 #define SPI_REG_ADRRESS_ANGLE  (2)
 

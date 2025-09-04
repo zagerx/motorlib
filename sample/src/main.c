@@ -78,23 +78,9 @@ int main(void)
 
 	static int16_t fault_fsm = 0;
 	static uint32_t conut = 0;
-	// const struct device *tle5012b = DEVICE_DT_GET(DT_NODELABEL(tle5012b0));
-	tle5012b_init();
-	k_msleep(2000);
-	// struct tle5012b_data data;
-	// tle5012b_init(tle5012b);
-	// if (!device_is_ready(tle5012b)) {
-	// 	printk("TLE5012B device not ready\n");
-	// }
+	k_msleep(200);
 	while (1) {
 		if (conut++ > 500) {
-			tle5012b_read();
-			// int ret = tle5012b_get_data(tle5012b, &data);
-			// if (ret == 0) {
-			// printk("Angle: raw=%d, converted=%d\n", data.rawdata, data.covdata);
-			// } else {
-			// printk("Failed to read data: %d\n", ret);
-			// }
 			conut = 0;
 		}
 		motor_get_bus_voltage_current(motor0, &bus_volcurur[0], &bus_volcurur[1]);

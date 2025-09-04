@@ -97,6 +97,7 @@ int foc_posloop_deinit(const struct device *dev);
 int foc_speedloop_init(const struct device *dev);
 int foc_speedloop_deinit(const struct device *dev);
 int foc_speedloop(const struct device *dev);
+int foc_init(const struct device *dev);
 
 extern float foc_calculate_speed(const struct device *dev, float cur_speed);
 void svm_apply_voltage_limiting(const struct device *dev, float *vd, float *vq, float Vdc);
