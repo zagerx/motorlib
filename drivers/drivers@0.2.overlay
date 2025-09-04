@@ -4,25 +4,9 @@
 	motors {
 		motor0: motor_0 {
 			compatible = "motor-bldc";
-			control-algorithm = <&foc0>;
 			feedback = <&super_400w_lun0>;
 			currsmp  = <&currsmp0>;
 			pwm      = <&pwm1>;
-			status   = "okay";
-		};
-
-	};
-
-	control_algorithm {
-		foc0: ctrl_algo0 {
-			compatible = "foc-ctrl-algo";
-			modulate = <1>;
-			status   = "okay";
-		};
-
-		foc1: ctrl_algo1 {
-			compatible = "foc-ctrl-algo";
-			modulate = <0>;
 			status   = "okay";
 		};
 	};

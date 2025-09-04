@@ -41,9 +41,9 @@ fsm_rt_t motor_init_state(fsm_cb_t *obj)
 	case ENTER:
 		m_data->statue = MOTOR_STATE_INIT;
 		if (m_data->mode == MOTOR_MODE_POSI) {
-			foc_posloop_init(foc);
+			posloop_init(foc);
 		} else if (m_data->mode == MOTOR_MODE_SPEED) {
-			foc_speedloop_init(foc);
+			speedloop_init(foc);
 		}
 		feedback_calibration(mcfg->feedback);
 		obj->chState = RUNING;
@@ -97,9 +97,9 @@ fsm_rt_t motor_runing_state(fsm_cb_t *obj)
 		m_data->statue = MOTOR_STATE_CLOSED_LOOP;
 	case RUNING:
 		if (m_data->mode == MOTOR_MODE_POSI) {
-			foc_posloop(foc);
+			posloop(foc);
 		} else if (m_data->mode == MOTOR_MODE_SPEED) {
-			foc_speedloop(foc);
+			speedloop(foc);
 		}
 
 		break;
@@ -124,7 +124,7 @@ fsm_rt_t motor_stop_state(fsm_cb_t *obj)
 	switch (obj->chState) {
 	case ENTER:
 		m_data->statue = MOTOR_STATE_STOP;
-		foc_posloop_deinit(foc);
+		posloop_deinit(foc);
 		svpwm_disable_threephase_channle(svpwm);
 		break;
 	case RUNING:
@@ -150,7 +150,7 @@ fsm_rt_t motor_falut_state(fsm_cb_t *obj)
 	switch (obj->chState) {
 	case ENTER:
 		m_data->statue = MOTOR_STATE_FAULT;
-		foc_posloop_deinit(foc);
+		posloop_deinit(foc);
 		svpwm_disable_threephase_channle(svpwm);
 		break;
 	case RUNING:

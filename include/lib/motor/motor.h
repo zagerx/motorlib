@@ -7,7 +7,6 @@ struct motor_config {
 	const struct device *currsmp;
 	const struct device *pwm;
 	const struct device *feedback;
-	fmm_t *fault[2];
 };
 
 /**
@@ -42,6 +41,7 @@ struct motor_data {
 	enum motor_state statue;
 	enum motor_fault_code faultcode;
 	const struct device *foc_dev; // FOC控制算法设备
+	fmm_t *fault[2];
 	fsm_cb_t *mode_state_mec;
 };
 

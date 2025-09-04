@@ -48,37 +48,37 @@ struct foc_data {
 	float v_q, v_d;		      /* Q/D axis voltages */
 };
 
-struct foc_config {
-	void (*modulate)(float, float, float *); /* Modulation function */
-};
+// struct foc_config {
+// 	void (*modulate)(float, float, float *); /* Modulation function */
+// };
 
-struct foc_api {
-	int (*currloop_init)(const struct device *);
-	int (*currloop)(const struct device *);
-	int (*currloop_deinit)(const struct device *);
+// struct foc_api {
+// 	int (*currloop_init)(const struct device *);
+// 	int (*currloop)(const struct device *);
+// 	int (*currloop_deinit)(const struct device *);
 
-	int (*speedloop_init)(const struct device *);
-	int (*speedloop)(const struct device *);
-	int (*speedloop_deinit)(const struct device *);
+// 	int (*speedloop_init)(const struct device *);
+// 	int (*speedloop)(const struct device *);
+// 	int (*speedloop_deinit)(const struct device *);
 
-	int (*posloop_init)(const struct device *);
-	int (*posloop)(const struct device *);
-	int (*posloop_deinit)(const struct device *);
-};
+// 	int (*posloop_init)(const struct device *);
+// 	int (*posloop)(const struct device *);
+// 	int (*posloop_deinit)(const struct device *);
+// };
 
-static inline void foc_modulate(const struct device *dev, float alpha, float beta, float *dabc)
-{
-	const struct foc_config *cfg = dev->config;
-	cfg->modulate(alpha, beta, dabc);
-}
+// static inline void foc_modulate(const struct device *dev, float alpha, float beta, float *dabc)
+// {
+// 	const struct foc_config *cfg = dev->config;
+// 	cfg->modulate(alpha, beta, dabc);
+// }
 
-static inline int foc_update_target_speed(const struct device *dev, float target)
+static inline int update_target_speed(const struct device *dev, float target)
 {
 	struct foc_data *data = dev->data;
 	return s_velocity_planning(&data->s_speed_ph, target);
 }
-static inline int foc_update_target_position(const struct device *dev, float start_pos,
-					     float target_pos, float total_time)
+static inline int update_target_position(const struct device *dev, float start_pos,
+					 float target_pos, float total_time)
 {
 	struct foc_data *data = dev->data;
 	return s_pos_planning(&data->s_pos_ph, start_pos, target_pos, total_time);
@@ -91,12 +91,12 @@ static inline int foc_update_vbusvolita_cbuscurr(const struct device *dev, float
 	data->bus_curr = bus_curr;
 	return 0;
 }
-int foc_posloop_init(const struct device *dev);
-int foc_posloop(const struct device *dev);
-int foc_posloop_deinit(const struct device *dev);
-int foc_speedloop_init(const struct device *dev);
-int foc_speedloop_deinit(const struct device *dev);
-int foc_speedloop(const struct device *dev);
+int posloop_init(const struct device *dev);
+int posloop(const struct device *dev);
+int posloop_deinit(const struct device *dev);
+int speedloop_init(const struct device *dev);
+int speedloop_deinit(const struct device *dev);
+int speedloop(const struct device *dev);
 int foc_init(const struct device *dev);
 
 extern float foc_calculate_speed(const struct device *dev, float cur_speed);

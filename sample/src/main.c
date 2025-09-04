@@ -34,7 +34,6 @@ extern void *tle5012b_read(void);
 int main(void)
 {
 	const struct device *motor0 = DEVICE_DT_GET(DT_NODELABEL(motor0));
-	const struct motor_config *cfg = motor0->config;
 	const struct motor_data *m_data = motor0->data;
 
 	int ret;
@@ -71,8 +70,8 @@ int main(void)
 	gpio_pin_set_dt(&encoder_3_3v, 1);
 #endif
 	float bus_volcurur[2];
-	fmm_t *bus_vol_fmm = cfg->fault[0];
-	fmm_t *buf_curr_fmm = cfg->fault[1];
+	fmm_t *bus_vol_fmm = m_data->fault[0];
+	fmm_t *buf_curr_fmm = m_data->fault[1];
 	fmm_init(bus_vol_fmm, 60.0f, 48.0f, 5, 5, NULL);
 	fmm_init(buf_curr_fmm, 5.0f, 0.0f, 5, 5, NULL);
 

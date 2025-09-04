@@ -115,7 +115,7 @@ static void foc_curr_regulator(void *ctx)
 	}
 	float dabc[3];
 	/* Perform SVM modulation */
-	foc_modulate(foc, alph, beta, dabc);
+	svm_set(alph, beta, dabc);
 	/* Set PWM outputs */
 	pwm_set_phase_voltages(cfg->pwm, dabc[0], dabc[1], dabc[2]);
 }
@@ -173,14 +173,14 @@ void motor_set_target_speed(const struct device *motor, float target)
 {
 	struct motor_data *m_data = motor->data;
 	const struct device *devfoc = m_data->foc_dev;
-	foc_update_target_speed(devfoc, target);
+	update_target_speed(devfoc, target);
 }
 void motor_set_target_position(const struct device *motor, float start, float target,
 			       float total_time)
 {
 	struct motor_data *m_data = motor->data;
 	const struct device *devfoc = m_data->foc_dev;
-	foc_update_target_position(devfoc, start, target, total_time);
+	update_target_position(devfoc, start, target, total_time);
 }
 void motor_set_vol(const struct device *motor, float *bus_vol)
 {
@@ -231,6 +231,11 @@ static int motor_init(const struct device *dev)
 
 /* Device tree instantiation macros */
 #define MOTOR_INIT(n)                                                                              \
+	static const struct motor_config motor_cfg_##n = {                                         \
+		.pwm = DEVICE_DT_GET(DT_INST_PHANDLE(n, pwm)),                                     \
+		.currsmp = DEVICE_DT_GET(DT_INST_PHANDLE(n, currsmp)),                             \
+		.feedback = DEVICE_DT_GET(DT_INST_PHANDLE(n, feedback)),                           \
+	};                                                                                         \
 	fsm_cb_t control_state_machine_##n;                                                        \
 	fsm_cb_t mode_state_machine_##n = {                                                        \
 		.sub_state_machine = &control_state_machine_##n,                                   \
@@ -239,14 +244,11 @@ static int motor_init(const struct device *dev)
 	};                                                                                         \
 	fmm_t bus_vol_fault_##n;                                                                   \
 	fmm_t bus_curr_fault_##n;                                                                  \
-	static const struct motor_config motor_cfg_##n = {                                         \
-		.pwm = DEVICE_DT_GET(DT_INST_PHANDLE(n, pwm)),                                     \
-		.currsmp = DEVICE_DT_GET(DT_INST_PHANDLE(n, currsmp)),                             \
-		.feedback = DEVICE_DT_GET(DT_INST_PHANDLE(n, feedback)),                           \
-		.fault = {&bus_vol_fault_##n, &bus_curr_fault_##n}};                               \
+	const struct device ctrl_data_##n;                                                         \
 	static struct motor_data motor_data_##n = {                                                \
 		.mode_state_mec = &mode_state_machine_##n,                                         \
-		.foc_dev = DEVICE_DT_GET(DT_INST_PHANDLE(n, control_algorithm)),                   \
+		.foc_dev = &ctrl_data_##n,                                                         \
+		.fault = {&bus_vol_fault_##n, &bus_curr_fault_##n},                                \
 	};                                                                                         \
 	DEVICE_DT_INST_DEFINE(n, motor_init, NULL, &motor_data_##n, &motor_cfg_##n, POST_KERNEL,   \
 			      CONFIG_MOTOR_INIT_PRIORITY, NULL);
