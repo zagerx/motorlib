@@ -34,18 +34,12 @@ fsm_rt_t motor_init_state(fsm_cb_t *obj)
 	const struct device *motor = obj->p1;
 	struct motor_data *m_data = motor->data;
 
-	const struct device *foc = ((const struct motor_data *)motor->data)->foc_dev;
 	const struct motor_config *mcfg = motor->config;
 
 	switch (obj->chState) {
 	case ENTER:
 		m_data->statue = MOTOR_STATE_INIT;
-		if (m_data->mode == MOTOR_MODE_POSI) {
-			posloop_init(foc);
-		} else if (m_data->mode == MOTOR_MODE_SPEED) {
-			speedloop_init(foc);
-		}
-		feedback_calibration(mcfg->feedback);
+		// feedback_calibration(mcfg->feedback);
 		obj->chState = RUNING;
 		break;
 	case RUNING:
@@ -67,9 +61,16 @@ fsm_rt_t motor_ready_state(fsm_cb_t *obj)
 	const struct device *motor = obj->p1;
 	struct motor_data *m_data = motor->data;
 	const struct device *svpwm = ((const struct motor_config *)motor->config)->pwm;
+	const struct device *foc = ((const struct motor_data *)motor->data)->foc_dev;
+
 	switch (obj->chState) {
 	case ENTER:
 		m_data->statue = MOTOR_STATE_READY;
+		if (m_data->mode == MOTOR_MODE_POSI) {
+			posloop_init(foc);
+		} else if (m_data->mode == MOTOR_MODE_SPEED) {
+			speedloop_init(foc);
+		}
 		svpwm_enable_threephase_channle(svpwm);
 		obj->chState = RUNING;
 		break;

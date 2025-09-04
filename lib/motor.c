@@ -226,6 +226,7 @@ static int motor_init(const struct device *dev)
 	/* Configure current sampling */
 	currsmp_configure(currsmp, foc_curr_regulator, (void *)dev);
 	foc_init(devfoc);
+	feedback_calibration(cfg->feedback);
 	return 0;
 }
 

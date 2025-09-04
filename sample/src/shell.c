@@ -64,9 +64,26 @@ static int cmd_motor_set_mode(const struct shell *sh, size_t argc, char **argv)
 	return 0;
 }
 
+static int cmd_motor_set_posi(const struct shell *sh, size_t argc, char **argv)
+{
+	if (argc != 2) {
+		shell_error(sh, "Usage: add <num1> <num2>");
+		return -EINVAL;
+	}
+	long mode = strtol(argv[1], NULL, 0);
+	if (mode == 1) {
+		motor_clear_realodom(motor, 0.0f);
+		motor_set_target_position(motor, 0.0f, -1500.0f, 5.0f);
+	} else if (mode == 2) {
+		motor_set_target_position(motor, -1500.0f, 0.0f, 5.0f);
+	}
+	motor_set_state(motor, MOTOR_STATE_CLOSED_LOOP);
+	return 0;
+}
 SHELL_CMD_REGISTER(hello, NULL, "Print hello", cmd_hello);
 SHELL_CMD_REGISTER(mode, NULL, "Motor Set Mode", cmd_motor_set_mode);
 SHELL_CMD_REGISTER(r, NULL, "Motor Set Ready", cmd_motor_set_ready);
 SHELL_CMD_REGISTER(c, NULL, "Motor Set Close", cmd_motor_set_closeloop);
 SHELL_CMD_REGISTER(speed, NULL, "Motor Set Speed", cmd_motor_set_speed);
 SHELL_CMD_REGISTER(s, NULL, "Motor Set Stop", cmd_motor_set_disable);
+SHELL_CMD_REGISTER(p, NULL, "Motor Set Posi", cmd_motor_set_posi);
