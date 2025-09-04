@@ -231,7 +231,6 @@ static const struct feedback_driver_api driver_feedback = {
 	.get_eangle = abz_stm32_get_eangle,
 	.calibration = abz_stm32_calibrate_eangle,
 	.get_rel_odom = abz_stm32_get_realtime_odom,
-	.feedback_enable = abz_hall_stm32_enable,
 	.set_rel_odom = abz_stm32_set_realtime_odom,
 };
 
@@ -304,6 +303,7 @@ static int abz_stm32_init(const struct device *dev)
 	LL_TIM_SetTriggerOutput(config->timer, LL_TIM_TRGO_RESET);
 	LL_TIM_DisableMasterSlaveMode(config->timer);
 
+	abz_hall_stm32_enable(dev);
 	return 0;
 }
 

@@ -40,10 +40,6 @@ void motor_start(const struct device *dev)
 
 	const struct motor_config *cfg = dev->config;
 
-	/* Start feedback device */
-	const struct device *dev_f = cfg->feedback;
-	feedback_start(dev_f);
-
 	/* Start PWM outputs */
 	const struct device *devc = cfg->pwm;
 	pwm_start(devc);

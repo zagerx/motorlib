@@ -42,18 +42,9 @@ struct feedback_driver_api {
 	void (*set_rel_odom)(const struct device *dev);
 	/* feedback calibration */
 	int (*calibration)(const struct device *dev);
-
-	void (*feedback_enable)(const struct device *dev);
 };
 
 /** @endcond */
-
-static inline void feedback_start(const struct device *dev)
-{
-	const struct feedback_driver_api *api = dev->api;
-	api->feedback_enable(dev);
-	return;
-}
 
 /**
  * @brief Get rads.
