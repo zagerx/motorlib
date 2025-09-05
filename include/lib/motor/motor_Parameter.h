@@ -20,7 +20,7 @@
 #define ABZ_ENCODER_LINES      (4096)	      // 编码器线数
 #define ABZ_ENCODER_RESOLUTION (0.087890625f) // 360.0f/ABZ_ENCODER_LINES
 #elif defined(CONFIG_MOTOR_ELUR_HALL)
-
+#elif defined(CONFIG_ENCODER_TYPE_TLE5012B)
 #else
 #error "No valid board configuration selected!"
 #endif

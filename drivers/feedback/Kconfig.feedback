@@ -27,11 +27,11 @@ config ENCODER_TYPE_AS5047
       Enable motor control library
 
 config ENCODER_TYPE_TLE5012B
-    bool "Encoder type"
-    default n  # 默认禁用
-    depends on SPI
-    help
-      Enable motor control library      
+	bool "Encoder type"
+	default n  # 默认禁用
+	depends on SPI
+	help
+	  Enable motor control library      
 
 config USER_USE_STM32_HAL_SPI
 	bool "stm32 hal gpio"
