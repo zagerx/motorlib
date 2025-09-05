@@ -54,7 +54,7 @@
 };
 
 &spi3 {
-	status = "disabled";                       
+	status = "okay";                       
 	pinctrl-0 = <&spi3_sck_pc10          
 		     &spi3_miso_pc11
 		     &spi3_mosi_pc12>;
@@ -64,7 +64,7 @@
 	tle5012b0: tle5012b@0 {
 		compatible = "infineon,tle5012b";
 		reg = <0>;
-		status = "disabled";
+		status = "okay";
 		spi-max-frequency = <8000000>; /* 1MHZ */
 	};
 };
