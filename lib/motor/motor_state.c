@@ -34,12 +34,9 @@ fsm_rt_t motor_init_state(fsm_cb_t *obj)
 	const struct device *motor = obj->p1;
 	struct motor_data *m_data = motor->data;
 
-	const struct motor_config *mcfg = motor->config;
-
 	switch (obj->chState) {
 	case ENTER:
 		m_data->statue = MOTOR_STATE_INIT;
-		// feedback_calibration(mcfg->feedback);
 		obj->chState = RUNING;
 		break;
 	case RUNING:

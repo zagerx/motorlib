@@ -32,7 +32,6 @@ struct foc_data {
 	s_in_t s_speed_ph;
 	float pos_real, pos_ref, pos_splanning_start, pos_splanning_targe;
 	SPosPlanner s_pos_ph;
-	lowfilter_t speed_filter;
 	modulation_ctrl_t modulation;
 	float bus_vol;
 	float bus_curr;
@@ -99,7 +98,6 @@ int speedloop_deinit(const struct device *dev);
 int speedloop(const struct device *dev);
 int foc_init(const struct device *dev);
 
-extern float foc_calculate_speed(const struct device *dev, float cur_speed);
 void svm_apply_voltage_limiting(const struct device *dev, float *vd, float *vq, float Vdc);
 
 #endif

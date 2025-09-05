@@ -8,6 +8,7 @@
  */
 
 #include "zephyr/device.h"
+#include "filter.h"
 #include "stm32h7xx_ll_tim.h"
 #include <sys/_intsup.h>
 #include <sys/_stdint.h>
@@ -58,6 +59,7 @@ struct hall_data_t {
 	float eomega;
 	float realtime_odom;
 	int8_t dir;
+	lowfilter_t omega_filter;
 };
 struct abz_hall_stm32_data {
 	int overflow;		      /* Timer overflow count */
@@ -181,7 +183,8 @@ static float abz_stm32_get_rads(const struct device *dev)
 {
 	const struct abz_hall_stm32_data *data = dev->data;
 	struct hall_data_t *hall = (struct hall_data_t *)(&data->hall);
-	return hall->eomega;
+
+	return lowfilter_cale(&(hall->omega_filter), hall->eomega * 95493.0f * 0.2f);
 }
 
 static float abz_stm32_get_realtime_odom(const struct device *dev)
@@ -347,6 +350,8 @@ static int hall_stm32_init(const struct device *dev)
 	hall->base_angle[5] = SCETION_5_BASEANGLE;
 	hall->base_angle[6] = SCETION_6_BASEANGLE;
 	hall->eangle = 0.0f;
+
+	lowfilter_init(&(hall->omega_filter), 10.0f);
 	return 0;
 }
 

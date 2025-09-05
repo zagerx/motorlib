@@ -77,7 +77,7 @@ static void foc_curr_regulator(void *ctx)
 	data->i_c = current_now.i_c;
 	data->eangle = feedback_get_eangle(cfg->feedback);
 	data->pos_real = feedback_get_position(cfg->feedback);
-	foc_calculate_speed(foc, feedback_get_rads(cfg->feedback) * 95493.0f * 0.2f);
+	data->speed_real = feedback_get_rads(cfg->feedback);
 
 	/* Generate test signals for open loop */
 	float alph, beta, sin_the, cos_the;

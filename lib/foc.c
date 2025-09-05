@@ -112,15 +112,6 @@ int posloop_deinit(const struct device *dev)
 	return 0;
 }
 
-float foc_calculate_speed(const struct device *dev, float cur_speed)
-{
-	struct foc_data *data = dev->data;
-	float speed;
-	speed = lowfilter_cale((lowfilter_t *)&data->speed_filter, cur_speed);
-	data->speed_real = speed;
-	return speed;
-}
-
 /*
  * Initialize FOC device
  * Returns: 0 on success
@@ -128,7 +119,6 @@ float foc_calculate_speed(const struct device *dev, float cur_speed)
 int foc_init(const struct device *dev)
 {
 	const struct foc_data *data = dev->data;
-	lowfilter_init((lowfilter_t *)&(data->speed_filter), 10.0f);
 	modulation_manager_init((modulation_ctrl_t *)&(data->modulation), 0.95f, 650e-9f, 10000);
 	return 0;
 }
