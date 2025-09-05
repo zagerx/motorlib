@@ -8,16 +8,16 @@
  * - Complementary channel outputs
  */
 
-#include "stm32h7xx.h"
-#include <stm32_ll_tim.h>
-#include <sys/_stdint.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pinctrl.h>
-#include <stm32h7xx_ll_tim.h>
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
-#include <zephyr/logging/log.h>
-#include <drivers/pwm.h>
+
+#if CONFIG_SOC_STM32H723XX || CONFIG_SOC_STM32G431XX
+#include <stm32_ll_tim.h>
+#endif
+
+#include "drivers/pwm.h"
 
 #define LOG_LEVEL CONFIG_MOTOR_LIB_LOG_LEVEL
 #include <zephyr/logging/log.h>

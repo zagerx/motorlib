@@ -10,7 +10,6 @@
 #include <statemachine.h>
 #include <stdint.h>
 #include <zephyr/logging/log.h>
-#include "stm32h7xx_ll_gpio.h"
 #include "zephyr/kernel.h"
 #include <s_posi_planning.h>
 #include <zephyr/logging/log.h>

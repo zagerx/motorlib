@@ -11,16 +11,11 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-/* System includes */
-#include "pid.h"
-#include "stm32h723xx.h"
-#include "stm32h7xx_ll_gpio.h"
-
+// #include <stdint.h>
 #include "zephyr/device.h"
-#include <stdint.h>
 #include <zephyr/kernel.h>
 #include <zephyr/logging/log.h>
-/* Local includes */
+
 #include <lib/foc/focutils.h>
 #include <lib/motor/motor.h>
 #include <lib/foc/foc.h> //TODO
@@ -31,6 +26,7 @@
 #include <lib/motor/motor_internal.h>
 #include <lib/motor/motor_Parameter.h>
 
+#include "pid.h"
 /* Device tree compatibility string */
 #define DT_DRV_COMPAT motor_bldc
 

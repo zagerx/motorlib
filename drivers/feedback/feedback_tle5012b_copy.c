@@ -1,10 +1,12 @@
-#include "zephyr/sys/printk.h"
-#include <sys/_stdint.h>
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/spi.h>
 #include <zephyr/drivers/gpio.h>
+
+#if CONFIG_SOC_STM32H723XX || CONFIG_SOC_STM32G431XX
 #include "stm32h7xx_hal_spi.h"
+#endif
+
 #define TLE5012_READ_ANGLE_CMD (0x80)
 #define TLE5012_TRANS_TIMEOUT  (2)
 #define SPI_REG_ADRRESS_ANGLE  (2)
@@ -131,6 +133,5 @@ void *tle5012b_read(void)
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
 	_read_angle_reg(&hspi3, &AngleIn17bits);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
-	printk("rawdata %d\r\n", AngleIn17bits);
 	return (void *)0;
 }

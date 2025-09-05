@@ -7,25 +7,22 @@
  * - Speed calculation
  */
 
-#include "zephyr/device.h"
-#include "filter.h"
-#include "stm32h7xx_ll_tim.h"
-#include <sys/_intsup.h>
-#include <sys/_stdint.h>
-#define DT_DRV_COMPAT st_abz_hall
+#include <zephyr/irq.h>
+#include <zephyr/device.h>
 
-#include <zephyr/drivers/clock_control/stm32_clock_control.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pinctrl.h>
-#include <zephyr/irq.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/gpio.h>
-#include <zephyr/logging/log.h>
-#include <zephyr/irq.h>
-#include <drivers/feedback.h>
+
+#include "filter.h"
+#include "drivers/feedback.h"
+#include "lib/motor/motor_Parameter.h"
+
+#if CONFIG_SOC_STM32H723XX || CONFIG_SOC_STM32G431XX
 #include <stm32_ll_tim.h>
-#include <lib/motor/motor_Parameter.h>
+#include <zephyr/drivers/clock_control/stm32_clock_control.h>
+#endif
+
+#define DT_DRV_COMPAT st_abz_hall
 
 #define LOG_LEVEL CONFIG_MOTOR_LIB_LOG_LEVEL
 #include <zephyr/logging/log.h>

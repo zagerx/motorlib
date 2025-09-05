@@ -8,17 +8,15 @@
  * - Open loop control
  */
 
+#include "zephyr/device.h"
+#include <zephyr/logging/log.h>
+
+#include <lib/foc/foc.h>
+#include <lib/foc/focutils.h>
 #include "filter.h"
 #include "pid.h"
 #include "lib/foc/svm.h"
 #include "lib/foc/deadtime_comp.h"
-#include "zephyr/device.h"
-
-#include <sys/_intsup.h>
-#include <zephyr/logging/log.h>
-#include <lib/foc/foc.h>
-#include <lib/foc/focutils.h>
-
 LOG_MODULE_REGISTER(foc, LOG_LEVEL_DBG);
 
 extern void modulation_manager_init(modulation_ctrl_t *ctrl, float max_modulation, float dead_time,

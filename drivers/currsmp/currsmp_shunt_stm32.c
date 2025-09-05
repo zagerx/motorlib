@@ -2,19 +2,19 @@
  * @addtogroup currsmp_drivers
  * @{
  */
-
-#include "stm32h7xx_ll_adc.h"
-#include <math.h>
-#include <stdint.h>
-#include <sys/_intsup.h>
+#include <zephyr/irq.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/adc.h>
-#include <zephyr/irq.h>
 #include <zephyr/drivers/pinctrl.h>
+
+#if CONFIG_SOC_STM32H723XX || CONFIG_SOC_STM32G431XX
 #include <zephyr/drivers/clock_control/stm32_clock_control.h>
-#include <stm32h7xx_ll_gpio.h>
-#include <drivers/currsmp.h>
-#include <filter.h>
+#include "stm32_ll_adc.h"
+#include <stm32_ll_gpio.h>
+#endif
+
+#include "drivers/currsmp.h"
+#include "filter.h"
 
 #define LOG_LEVEL CONFIG_MOTOR_LIB_LOG_LEVEL
 #include <zephyr/logging/log.h>
@@ -213,7 +213,9 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 	if (!cfg->slave_mode_flag) {
 		ADC_CommonInitStruct.CommonClock = LL_ADC_CLOCK_ASYNC_DIV4;
 		ADC_CommonInitStruct.Multimode = LL_ADC_MULTI_DUAL_INJ_SIMULT;
+#if CONFIG_SOC_STM32H723XX
 		ADC_CommonInitStruct.MultiTwoSamplingDelay = LL_ADC_MULTI_TWOSMP_DELAY_2CYCLES_5;
+#endif
 		LL_ADC_CommonInit(__LL_ADC_COMMON_INSTANCE(cfg->adc), &ADC_CommonInitStruct);
 
 		ADC_INJ_InitStruct.TriggerSource = LL_ADC_INJ_TRIG_EXT_TIM1_CH4;
@@ -240,6 +242,7 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 	while (wait_loop_index != 0) {
 		wait_loop_index--;
 	}
+#if CONFIG_SOC_STM32H723XX
 	if (!cfg->slave_mode_flag) {
 		LL_ADC_REG_SetSequencerRanks(cfg->adc, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_15);
 		LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_15,
@@ -297,13 +300,15 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_8); /* U2----TP1821 */
 		LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_9); /* V2----TP1824 */
 	}
-
+#endif
 	if (!cfg->slave_mode_flag) {
 		if (cfg->irq_cfg_func != NULL) {
 			cfg->irq_cfg_func();
 		}
 		LL_ADC_Disable(cfg->adc);
+#if CONFIG_SOC_STM32H723XX
 		LL_ADC_StartCalibration(cfg->adc, LL_ADC_CALIB_OFFSET, LL_ADC_SINGLE_ENDED);
+#endif
 		while (LL_ADC_IsCalibrationOnGoing(cfg->adc))
 			;
 		LL_ADC_Enable(cfg->adc);
@@ -313,7 +318,9 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 		LL_ADC_INJ_StartConversion(cfg->adc);
 	} else {
 		LL_ADC_Disable(cfg->adc);
+#if CONFIG_SOC_STM32H723XX
 		LL_ADC_StartCalibration(cfg->adc, LL_ADC_CALIB_OFFSET, LL_ADC_SINGLE_ENDED);
+#endif
 		while (LL_ADC_IsCalibrationOnGoing(cfg->adc))
 			;
 		LL_ADC_Enable(cfg->adc);
