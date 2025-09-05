@@ -143,7 +143,9 @@ static void currsmp_shunt_stm32_get_bus_vol_curr(const struct device *dev, float
 		}
 	}
 	static volatile uint32_t ch14_value;
+#if CONFIG_SOC_STM32H723XX
 	ch14_value = LL_ADC_REG_ReadConversionData16(ADC1);
+#endif
 	*bus_vol = ch14_value * 0.01632f;
 
 	while (!LL_ADC_IsActiveFlag_EOC(ADC1)) {
@@ -153,7 +155,9 @@ static void currsmp_shunt_stm32_get_bus_vol_curr(const struct device *dev, float
 		}
 	}
 	static volatile uint32_t ch4_value;
+#if CONFIG_SOC_STM32H723XX
 	ch4_value = LL_ADC_REG_ReadConversionData16(ADC1);
+#endif
 	LL_ADC_REG_StopConversion(ADC1);
 	static int16_t temp;
 	const struct currsmp_shunt_stm32_data *data = dev->data;
@@ -339,7 +343,6 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 
 	return 0;
 }
-
 /** @internal Helper macro to define the first instance with a specific IRQn. */
 #define FIRST_WITH_IRQN_INTERNAL(n, irqn)                                                          \
 	COND_CODE_1(IS_EQ(irqn, DT_IRQN(DT_INST_PARENT(n))), (n, ), (EMPTY, ))

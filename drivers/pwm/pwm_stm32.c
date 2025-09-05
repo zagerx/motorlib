@@ -27,11 +27,11 @@ LOG_MODULE_REGISTER(pwm_stm32);
 
 /* PWM configuration structure */
 struct pwm_stm32_config {
-	TIM_TypeDef *timer;			 /* Timer register base */
-	struct stm32_pclken pclken;		 /* Clock enable info */
+	TIM_TypeDef *timer;                      /* Timer register base */
+	struct stm32_pclken pclken;              /* Clock enable info */
 	const struct pinctrl_dev_config *pincfg; /* Pin configuration */
-	uint32_t timing_params[3];		 /* [0]=dead time (ns), [1]=ARR, [2]=PSC */
-	uint32_t slave_enable;			 /* Slave mode flag */
+	uint32_t timing_params[3];               /* [0]=dead time (ns), [1]=ARR, [2]=PSC */
+	uint32_t slave_enable;                   /* Slave mode flag */
 };
 
 /*
@@ -123,7 +123,6 @@ static int pwm_stm32_init(const struct device *dev)
 {
 	const struct pwm_stm32_config *config = dev->config;
 	int ret;
-
 	/* Initialize timer hardware */
 	if (!config->slave_enable) {
 		MX_TIM1_Init();

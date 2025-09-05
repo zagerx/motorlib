@@ -1,6 +1,5 @@
 #define DT_DRV_COMPAT ams_as5047
 #include <zephyr/device.h>
-#include <zephyr/logging/log.h>
 #include <zephyr/drivers/spi.h>
 
 #include "drivers/feedback.h"
@@ -9,9 +8,9 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(driver_feedback_as5047);
 #define AS5047_ANGLE_REGISTER_H 0x0E
-#define AS5047_FULL_ANGLE	360
-#define AS5047_PULSES_PER_REV	4096
-#define AS5047_MILLION_UNIT	1000000
+#define AS5047_FULL_ANGLE       360
+#define AS5047_PULSES_PER_REV   4096
+#define AS5047_MILLION_UNIT     1000000
 
 struct as5047_config {
 	struct spi_dt_spec spi_port;
@@ -50,7 +49,6 @@ static const struct feedback_driver_api driver_feedback = {
 	.get_eangle = as5047_fetch,
 	.calibration = NULL,
 	.get_rel_odom = NULL,
-	.feedback_enable = NULL,
 	.set_rel_odom = NULL,
 };
 
@@ -64,7 +62,7 @@ static int feedback_as5047_init(const struct device *dev)
 	static struct as5047_data as5047_data##n = {};                                             \
                                                                                                    \
 	DEVICE_DT_INST_DEFINE(n, feedback_as5047_init, NULL, &as5047_data##n, &as5047_config##n,   \
-			      PRE_KERNEL_1, CONFIG_FEEDBACK_INIT_PRIORITY, &driver_feedback);
+			      POST_KERNEL, CONFIG_FEEDBACK_INIT_PRIORITY, &driver_feedback);
 
 /* Initialize all instances */
 DT_INST_FOREACH_STATUS_OKAY(FEEDBACK_AS5047_INIT)

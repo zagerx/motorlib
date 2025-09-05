@@ -4,7 +4,7 @@
 	motors {
 		motor0: motor_0 {
 			compatible = "motor-bldc";
-			feedback = <&tle5012b0>;
+			feedback = <&as50470>;
 			currsmp  = <&currsmp0>;
 			pwm      = <&pwm1>;
 			status   = "okay";
@@ -16,9 +16,9 @@
 &timers1 {
 	pwm1: pwm {
 		compatible = "st,stm32-pwm-custom";
-		pinctrl-0 = <&tim1_ch1_pe9  &tim1_ch1n_pe8
-			     &tim1_ch2_pe11 &tim1_ch2n_pe10
-			     &tim1_ch3_pe13 &tim1_ch3n_pe12>;
+		pinctrl-0 = <&tim1_ch1_pa8  &tim1_ch1n_pb13
+			     &tim1_ch2_pa9  &tim1_ch2n_pb14
+			     &tim1_ch3_pa10 &tim1_ch3n_pb15>;
 		pinctrl-names = "default";
 		timing-params = <120 13750 0>;
 		slave = <0>;
@@ -28,14 +28,14 @@
 
 &spi1 {
 	status = "okay";                       
-	pinctrl-0 = <&spi1_sck_pc10          
-		     &spi1_miso_pc11
-		     &spi1_mosi_pc12>;
+	pinctrl-0 = <&spi1_sck_pb3          
+		     &spi1_miso_pb4
+		     &spi1_mosi_pb5>;
 	pinctrl-names = "default";
-	cs-gpios = <&gpioa 15 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
+	cs-gpios = <&gpioa 4 (GPIO_ACTIVE_LOW | GPIO_PULL_UP)>;
 
-	tle5012b0: tle5012b@0 {
-		compatible = "infineon,tle5012b";
+	as50470: as5047p@0 {
+		compatible = "ams,as5047";
 		reg = <0>;
 		status = "okay";
 		spi-max-frequency = <8000000>; /* 1MHZ */
@@ -45,11 +45,10 @@
 &adc1 {
 	currsmp0: currsmp {
 		compatible = "st,stm32-currsmp-shunt";
-		pinctrl-0 = <&adc1_inp15_pa3 &adc1_inp4_pc4
-			     &adc1_inp16_pa0 &adc1_inp17_pa1
-			     &adc1_inp14_pa2>;
+		pinctrl-0 = <&adc1_in3_pa2 &adc1_in12_pb1
+			     &adc1_in11_pb12 &adc2_in3_pa6>;
 		pinctrl-names = "default";
-		adc-channels = <15 4 16 17 14>;
+		adc-channels = <3 12 11 3>;
 		adc-slave = <0>;
 		status = "okay";
 	};
