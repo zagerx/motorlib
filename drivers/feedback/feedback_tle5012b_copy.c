@@ -3,6 +3,8 @@
 #include <zephyr/drivers/spi.h>
 #include <zephyr/drivers/gpio.h>
 
+#include "drivers/feedback.h"
+
 #if CONFIG_SOC_STM32H723XX || CONFIG_SOC_STM32G431XX
 #include "stm32h7xx_hal_spi.h"
 #endif
@@ -123,15 +125,66 @@ static inline uint8_t _read_angle_reg(SPI_HandleTypeDef *hSpi, uint16_t *pData)
 	// }
 	return ret;
 }
-void tle5012b_init(void)
+
+struct tle5012b_config {
+	struct spi_dt_spec spi_port;
+};
+
+struct feedback_data {
+	float eangle; //
+	float eomega; // rad
+	float odom;   // m
+
+	uint16_t raw;
+};
+
+static void tle5012b_init(const struct device *dev)
 {
 	MX_SPI3_Init();
 }
-void *tle5012b_read(void)
+static uint16_t tle5012b_read(const struct device *dev)
 {
 	unsigned short AngleIn17bits;
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
 	_read_angle_reg(&hspi3, &AngleIn17bits);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
-	return (void *)0;
+	return AngleIn17bits;
 }
+static float feedback_cacle_eangle(const struct device *dev)
+{
+	uint16_t raw = tle5012b_read(dev);
+	return (raw * 360.0f) / 32768.0f;
+}
+static float feedback_cacle_eomega(const struct device *dev)
+{
+	return 0.0f;
+}
+static float feedback_cacle_odom(const struct device *dev)
+{
+	return 0.0f;
+}
+static int feedback_calibration_firstangle(const struct device *dev)
+{
+	return 0;
+}
+static const struct feedback_driver_api driver_feedback = {
+	.get_rads = feedback_cacle_eomega,
+	.get_eangle = feedback_cacle_eangle,
+	.get_rel_odom = feedback_cacle_odom,
+	.calibration = feedback_calibration_firstangle,
+	.set_rel_odom = NULL,
+};
+
+#define TLE5012B_DEFINE(inst)                                                                      \
+	static struct feedback_data feedback_data_##inst;                                          \
+	static const struct tle5012b_config tle5012b_cfg_##inst = {                                \
+		.spi_port = SPI_DT_SPEC_INST_GET(inst,                                             \
+						 SPI_OP_MODE_MASTER | SPI_HALF_DUPLEX |            \
+							 SPI_WORD_SET(16) | SPI_MODE_CPHA,         \
+						 0),                                               \
+	};                                                                                         \
+	DEVICE_DT_INST_DEFINE(inst, tle5012b_init, NULL, &feedback_data_##inst,                    \
+			      &tle5012b_cfg_##inst, POST_KERNEL, CONFIG_FEEDBACK_INIT_PRIORITY,    \
+			      &driver_feedback);
+
+DT_INST_FOREACH_STATUS_OKAY(TLE5012B_DEFINE)
