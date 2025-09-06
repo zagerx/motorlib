@@ -30,7 +30,7 @@ extern enum motor_fault_code motor_get_falutcode(const struct device *motor);
 // extern int tle5012_update(const struct device *dev);
 // extern int tle5012b_init(const struct device *dev);
 
-int tle5012b_read(const struct device *dev);
+// int tle5012b_read(const struct device *dev);
 
 int main(void)
 {
@@ -78,13 +78,13 @@ int main(void)
 
 	static int16_t fault_fsm = 0;
 	static uint32_t conut = 0;
-	const struct device *tle5012b_dev = DEVICE_DT_GET(DT_NODELABEL(tle5012b0));
+	// const struct device *tle5012b_dev = DEVICE_DT_GET(DT_NODELABEL(tle5012b0));
 	// tle5012b_init(tle5012b_dev);
 	k_msleep(200);
 	while (1) {
 		if (conut++ > 500) {
 			conut = 0;
-			tle5012b_read(tle5012b_dev);
+			// tle5012b_read(tle5012b_dev);
 		}
 		motor_get_bus_voltage_current(motor0, &bus_volcurur[0], &bus_volcurur[1]);
 		motor_set_vol(motor0, bus_volcurur);

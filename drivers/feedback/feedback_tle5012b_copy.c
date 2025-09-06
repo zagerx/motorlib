@@ -8,6 +8,7 @@
 #if CONFIG_SOC_STM32H723XX || CONFIG_SOC_STM32G431XX
 #include "stm32h7xx_hal_spi.h"
 #endif
+#define DT_DRV_COMPAT infineon_tle5012b
 
 #define TLE5012_READ_ANGLE_CMD (0x80)
 #define TLE5012_TRANS_TIMEOUT  (2)
@@ -138,9 +139,10 @@ struct feedback_data {
 	uint16_t raw;
 };
 
-static void tle5012b_init(const struct device *dev)
+static int tle5012b_init(const struct device *dev)
 {
 	MX_SPI3_Init();
+	return 0;
 }
 static uint16_t tle5012b_read(const struct device *dev)
 {

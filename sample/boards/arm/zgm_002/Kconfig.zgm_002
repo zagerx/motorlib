@@ -2,15 +2,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 config BOARD_ZGM_002
+	default y
 	select SOC_STM32H723XX
-    select USE_STM32_LL_TIM
+    	select USE_STM32_LL_TIM
 	select USE_STM32_LL_RCC
-    select USE_STM32_LL_ADC    
-
-
-     
-
-config MOTOR1_ENABLED
-    bool "Motor1 Enabled"
-    help
-      Enable motor1 device node
+    	select USE_STM32_LL_ADC    
