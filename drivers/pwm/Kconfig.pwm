@@ -12,3 +12,13 @@ config PWMX_STM32_INIT_PRIORITY
         help
           Initialization priority for STM32 PWM drivers.
           Must initialize before current sampling/FOC.
+
+config USER_USE_STM32_HAL_TIM
+	bool "stm32 hal adc"
+	select USE_STM32_HAL_TIM_EX
+	select USE_STM32_HAL_TIM
+	select USE_STM32_HAL_GPIO_EX
+	select USE_STM32_HAL_GPIO
+	select USE_STM32_HAL_CORTEX
+	help
+	   Temp Start STM32 HAL Lib 	  

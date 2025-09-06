@@ -12,3 +12,15 @@ config CURRSMP_INIT_PRIORITY
         help
           Initialization priority for current sampling devices.
           Must initialize before FOC algorithms.
+
+
+config USER_USE_STM32_HAL_ADC
+	bool "stm32 hal adc"
+	select USE_STM32_HAL_ADC_EX
+	select USE_STM32_HAL_ADC
+	select USE_STM32_HAL_GPIO_EX
+	select USE_STM32_HAL_GPIO
+	select USE_STM32_HAL_OPAMP
+	select USE_STM32_HAL_OPAMP_EX
+	help
+	   Temp Start STM32 HAL Lib 
