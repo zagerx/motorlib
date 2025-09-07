@@ -24,7 +24,8 @@
 #elif defined(CONFIG_ENCODER_TYPE_TLE5012B)
 
 #elif defined(CONFIG_ENCODER_TYPE_AS5047)
-
+#define MOTOR_DEBUG_IQ        (0.02f)
+#define MOTOR_DEBUG_SELFANGLE (0.2f)
 #else
 #error "No valid board configuration selected!"
 #endif

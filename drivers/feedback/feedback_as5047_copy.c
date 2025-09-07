@@ -25,7 +25,7 @@ void *as5047_readangle(void)
 	uint16_t data;
 	data = spi_rw_onebyte(0xFFFF);
 	g_rawdata = (uint32_t)data;
-	LOG_DBG("raw:%d", data);
+	// LOG_DBG("raw:%d", data);
 	return (void *)&g_rawdata;
 }
 static uint8_t ams_parity(uint16_t v)

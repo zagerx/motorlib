@@ -20,7 +20,7 @@
 			     &tim1_ch2_pa9  &tim1_ch2n_pb14
 			     &tim1_ch3_pa10 &tim1_ch3n_pb15>;
 		pinctrl-names = "default";
-		timing-params = <120 13750 0>;
+		timing-params = <120 7999 0>;
 		slave = <0>;
 		status = "okay";
 	};
@@ -46,9 +46,9 @@
 	currsmp0: currsmp {
 		compatible = "st,stm32-currsmp-shunt";
 		pinctrl-0 = <&adc1_in3_pa2 &adc1_in12_pb1
-			     &adc1_in11_pb12 &adc2_in3_pa6>;
+			     &adc1_in11_pb12>;
 		pinctrl-names = "default";
-		adc-channels = <3 12 11 3>;
+		adc-channels = <3 12 11>;
 		adc-slave = <0>;
 		status = "okay";
 	};
