@@ -24,6 +24,7 @@ LOG_MODULE_REGISTER(motor_state);
 fsm_rt_t motor_ready_state(fsm_cb_t *obj);
 fsm_rt_t motor_runing_state(fsm_cb_t *obj);
 fsm_rt_t motor_stop_state(fsm_cb_t *obj);
+fsm_rt_t motor_aligh_state(fsm_cb_t *obj);
 
 fsm_rt_t motor_init_state(fsm_cb_t *obj)
 {
@@ -39,7 +40,32 @@ fsm_rt_t motor_init_state(fsm_cb_t *obj)
 		obj->chState = RUNING;
 		break;
 	case RUNING:
+		break;
+	case EXIT:
+		break;
+	default:
+		break;
+	}
 
+	return 0;
+}
+fsm_rt_t motor_aligh_state(fsm_cb_t *obj)
+{
+	enum {
+		RUNING = USER_STATUS,
+	};
+	const struct device *motor = obj->p1;
+	struct motor_data *m_data = motor->data;
+	const struct device *svpwm = ((const struct motor_config *)motor->config)->pwm;
+	const struct device *fb = ((const struct motor_config *)motor->config)->feedback;
+	switch (obj->chState) {
+	case ENTER:
+		m_data->statue = MOTOR_STATE_ALIGN;
+		obj->chState = RUNING;
+		svpwm_enable_threephase_channle(svpwm);
+		break;
+	case RUNING:
+		feedback_calibration(fb);
 		break;
 	case EXIT:
 		break;

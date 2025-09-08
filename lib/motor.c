@@ -44,7 +44,7 @@ extern fsm_rt_t motor_runing_state(fsm_cb_t *obj);
 extern fsm_rt_t motor_stop_state(fsm_cb_t *obj);
 extern fsm_rt_t motor_idle_state(fsm_cb_t *obj);
 extern fsm_rt_t motor_falut_state(fsm_cb_t *obj);
-
+extern fsm_rt_t motor_aligh_state(fsm_cb_t *obj);
 /**
  * @brief FOC current regulator callback
  * @param ctx Device context pointer
@@ -85,6 +85,12 @@ static void foc_curr_regulator(void *ctx)
 	float d_out, q_out;
 	if (motor_get_state(dev) == MOTOR_STATE_CLOSED_LOOP) {
 #if CONFIG_MOTOR_DEBUG_MODE
+#if CONFIG_MOTOR_DEBUG_ENCODERMODE
+		d_out = 0.0f;
+		q_out = MOTOR_DEBUG_IQ;
+		sin_cos_f32(((data->eangle)), &sin_the, &cos_the);
+		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
+#else
 		static float debug_eangle = 0.0f;
 		d_out = 0.0f;
 		q_out = MOTOR_DEBUG_IQ;
@@ -95,6 +101,7 @@ static void foc_curr_regulator(void *ctx)
 		}
 		sin_cos_f32(((debug_eangle)), &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
+#endif
 #else
 		d_out = pid_contrl((pid_cb_t *)(&data->id_pid), 0.0f, data->i_d);
 		q_out = pid_contrl((pid_cb_t *)(&data->iq_pid), data->iq_ref, data->i_q);
@@ -147,6 +154,8 @@ void motor_set_state(const struct device *motor, enum motor_state state)
 		TRAN_STATE(sub_sm, motor_idle_state);
 	} else if (state == MOTOR_STATE_FAULT) {
 		TRAN_STATE(sub_sm, motor_falut_state);
+	} else if (state == MOTOR_STATE_ALIGN) {
+		TRAN_STATE(sub_sm, motor_aligh_state);
 	}
 }
 enum motor_state motor_get_state(const struct device *motor)
@@ -241,7 +250,8 @@ static int motor_init(const struct device *dev)
 	};                                                                                         \
 	fmm_t bus_vol_fault_##n;                                                                   \
 	fmm_t bus_curr_fault_##n;                                                                  \
-	const struct device ctrl_data_##n;                                                         \
+	struct foc_data focdata_##n;                                                               \
+	const struct device ctrl_data_##n = {.data = &focdata_##n};                                \
 	static struct motor_data motor_data_##n = {                                                \
 		.mode_state_mec = &mode_state_machine_##n,                                         \
 		.foc_dev = &ctrl_data_##n,                                                         \

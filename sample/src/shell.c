@@ -24,6 +24,13 @@ static int cmd_motor_set_ready(const struct shell *sh, size_t argc, char **argv)
 	motor_set_state(motor, MOTOR_STATE_READY);
 	return 0;
 }
+// static int cmd_motor_set_aligh(const struct shell *sh, size_t argc, char **argv)
+// {
+// 	ARG_UNUSED(argc);
+// 	ARG_UNUSED(argv);
+// 	motor_set_state(motor, MOTOR_STATE_ALIGN);
+// 	return 0;
+// }
 static int cmd_motor_set_disable(const struct shell *sh, size_t argc, char **argv)
 {
 	ARG_UNUSED(argc);
@@ -83,6 +90,7 @@ static int cmd_motor_set_posi(const struct shell *sh, size_t argc, char **argv)
 SHELL_CMD_REGISTER(hello, NULL, "Print hello", cmd_hello);
 SHELL_CMD_REGISTER(mode, NULL, "Motor Set Mode", cmd_motor_set_mode);
 SHELL_CMD_REGISTER(r, NULL, "Motor Set Ready", cmd_motor_set_ready);
+// SHELL_CMD_REGISTER(a, NULL, "Motor Set Close", cmd_motor_set_aligh);
 SHELL_CMD_REGISTER(c, NULL, "Motor Set Close", cmd_motor_set_closeloop);
 SHELL_CMD_REGISTER(speed, NULL, "Motor Set Speed", cmd_motor_set_speed);
 SHELL_CMD_REGISTER(s, NULL, "Motor Set Stop", cmd_motor_set_disable);

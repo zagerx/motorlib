@@ -1,10 +1,13 @@
+#include <math.h>
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/spi.h>
 #include <zephyr/drivers/gpio.h>
 
 #include "drivers/feedback.h"
-
+#include "lib/motor/motor_Parameter.h"
+#include "amplitude_limiting_filter.h"
+#include "zephyr/sys/printk.h"
 #if CONFIG_SOC_STM32H723XX || CONFIG_SOC_STM32G431XX
 #include "stm32h7xx_hal_spi.h"
 #endif
@@ -16,6 +19,11 @@
 
 SPI_HandleTypeDef hspi3;
 
+static inline float _normalize_angle(float angle)
+{
+	float a = fmodf(angle, 360.0f);
+	return a >= 0 ? a : (a + 360.0f);
+}
 void MX_SPI3_Init(void)
 {
 	hspi3.Instance = SPI3;
@@ -136,17 +144,21 @@ struct feedback_data {
 	float eomega; // rad
 	float odom;   // m
 
+	float offset;
+	short calibration_state;
+	AmplitudeLimitingFilter filter;
 	uint16_t raw;
 };
 
 static int tle5012b_init(const struct device *dev)
 {
 	MX_SPI3_Init();
+	// struct feedback_data *data = dev->data;
 	return 0;
 }
 static uint16_t tle5012b_read(const struct device *dev)
 {
-	unsigned short AngleIn17bits;
+	unsigned short AngleIn17bits = 0;
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_RESET);
 	_read_angle_reg(&hspi3, &AngleIn17bits);
 	HAL_GPIO_WritePin(GPIOA, GPIO_PIN_15, GPIO_PIN_SET);
@@ -154,8 +166,16 @@ static uint16_t tle5012b_read(const struct device *dev)
 }
 static float feedback_cacle_eangle(const struct device *dev)
 {
-	uint16_t raw = tle5012b_read(dev);
-	return (raw * 360.0f) / 32768.0f;
+	struct feedback_data *data = dev->data;
+	int32_t raw = tle5012b_read(dev) - 32768;
+	raw = amplitude_limiting_filter(&data->filter, raw);
+	data->raw = raw;
+	if (!data->calibration_state) {
+		return 0.0f;
+	}
+	data->eangle =
+		_normalize_angle((raw * 360.0f) / 32768.0f * MOTOR_PAIRS - data->offset + 90.0f);
+	return data->eangle;
 }
 static float feedback_cacle_eomega(const struct device *dev)
 {
@@ -167,7 +187,17 @@ static float feedback_cacle_odom(const struct device *dev)
 }
 static int feedback_calibration_firstangle(const struct device *dev)
 {
+	int32_t raw = tle5012b_read(dev) - 32768;
+	struct feedback_data *data = dev->data;
+	data->offset = 115.0f; //_normalize_angle((raw * 360.0f) / 32768.0f * MOTOR_PAIRS);
+	data->calibration_state = 1;
+	filter_init(&data->filter, 10000, 0, 32768, raw);
 	return 0;
+}
+static short feedback_read_calibration_state(const struct device *dev)
+{
+	struct feedback_data *data = dev->data;
+	return data->calibration_state;
 }
 static const struct feedback_driver_api driver_feedback = {
 	.get_rads = feedback_cacle_eomega,
@@ -175,6 +205,7 @@ static const struct feedback_driver_api driver_feedback = {
 	.get_rel_odom = feedback_cacle_odom,
 	.calibration = feedback_calibration_firstangle,
 	.set_rel_odom = NULL,
+	.get_calibration_state = feedback_read_calibration_state,
 };
 
 #define TLE5012B_DEFINE(inst)                                                                      \

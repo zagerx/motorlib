@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<JScopeProject>
+    <FileVersion major="1" minor="1" />
+    <Project>
+        <Configuration>
+            <JLink>
+                <Options Connection="1" IsRTTSession="0" IsRTTWithTimeStamp="0" IsRTTPlus="0" SamplingPeriod="1000" SerialNo="0" JTAG_IRPre="0" JTAG_DRPre="0" IP="" TargetDevice="STM32H723VG" TargetInterface="SWD" InterfaceSpeed="4000" />
+            </JLink>
+            <ElfFile Name="/home/zhangge/worknote/EmbeddedCode/PowerLift/modules/lib/motorlib/build/zephyr/zephyr.elf" />
+            <Scope>
+                <Options TimeResolutionUs="1000000" />
+            </Scope>
+            <Trigger>
+                <Options Level="0" Symbol="eangle" On="0" Auto="0" Rise="0" Fall="0" />
+            </Trigger>
+        </Configuration>
+        <Windows>
+            <Graph Show="1" />
+            <Watch Show="1" />
+        </Windows>
+        <SelectedSymbols>
+            <Symbol>
+                <Options Name="eangle" Address="0x240017A0" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="1.79769e+308" YMaxSampled="-1.79769e+308" YAvgSampled="0" Offset="0" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/zhangge/worknote/EmbeddedCode/PowerLift/modules/lib/motorlib/drivers/feedback/feedback_tle5012b_copy.c" DrawStyle="0" NameWithParents=".feedback_data_0.eangle" />
+            </Symbol>
+            <Symbol>
+                <Options Name="raw" Address="0x240017C4" Type="short unsigned int" TypeID="7" Size="2" GraphColorRed="85" GraphColorGreen="255" GraphColorBlue="0" YMinSampled="1.79769e+308" YMaxSampled="-1.79769e+308" YAvgSampled="0" Offset="0" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="65535" File="/home/zhangge/worknote/EmbeddedCode/PowerLift/modules/lib/motorlib/drivers/feedback/feedback_tle5012b_copy.c" DrawStyle="0" NameWithParents=".feedback_data_0.raw" />
+            </Symbol>
+            <Symbol>
+                <Options Name="eangle" Address="0x240019F0" Type="float" TypeID="1" Size="4" GraphColorRed="255" GraphColorGreen="0" GraphColorBlue="0" YMinSampled="1.79769e+308" YMaxSampled="-1.79769e+308" YAvgSampled="0" Offset="0" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/zhangge/worknote/EmbeddedCode/PowerLift/modules/lib/motorlib/lib/motor.c" DrawStyle="0" NameWithParents=".focdata_0.eangle" />
+            </Symbol>
+            <Symbol>
+                <Options Name="debug_eangle" Address="0x24001850" Type="static float" TypeID="1" Size="4" GraphColorRed="0" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="1.79769e+308" YMaxSampled="-1.79769e+308" YAvgSampled="0" Offset="0" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="-2147483648" File="/home/zhangge/worknote/EmbeddedCode/PowerLift/modules/lib/motorlib/lib/motor.c" DrawStyle="0" NameWithParents=".debug_eangle" />
+            </Symbol>
+            <Symbol>
+                <Options Name="outlier_count" Address="0x240017C0" Type="int" TypeID="12" Size="4" GraphColorRed="0" GraphColorGreen="0" GraphColorBlue="255" YMinSampled="1.79769e+308" YMaxSampled="-1.79769e+308" YAvgSampled="0" Offset="0" ShowInGraph="1" YOffset="0" IsAutoConfig="0" YResolution="1" MaxValue="2147483647" File="/home/zhangge/worknote/EmbeddedCode/PowerLift/modules/lib/motorlib/drivers/feedback/feedback_tle5012b_copy.c" DrawStyle="0" NameWithParents=".feedback_data_0.filter.outlier_count" />
+            </Symbol>
+        </SelectedSymbols>
+    </Project>
+</JScopeProject>

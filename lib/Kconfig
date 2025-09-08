@@ -29,3 +29,9 @@ config MOTOR_DEBUG_MODE
 	default n 
 	help
 	  Temp test mode
+config MOTOR_DEBUG_ENCODERMODE
+	bool "DEBUG mode"
+	default n 
+	depends on MOTOR_DEBUG_MODE
+	help
+	  Temp test mode

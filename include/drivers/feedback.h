@@ -42,6 +42,7 @@ struct feedback_driver_api {
 	void (*set_rel_odom)(const struct device *dev);
 	/* feedback calibration */
 	int (*calibration)(const struct device *dev);
+	short (*get_calibration_state)(const struct device *dev);
 };
 
 /** @endcond */
@@ -113,7 +114,16 @@ static inline int feedback_calibration(const struct device *dev)
 
 	return 0;
 }
+static inline short feedback_get_calibration_state(const struct device *dev)
+{
+	const struct feedback_driver_api *api = dev->api;
 
+	if (api->calibration) {
+		return api->calibration(dev);
+	}
+
+	return 0;
+}
 /** @} */
 
 #endif /* _SPINNER_DRIVERS_FEEDBACK_H_ */
