@@ -53,11 +53,9 @@ int foc_currloop(const struct device *dev)
 }
 int foc_currloop_update_idq_Ref(const struct device *dev, float d_ref, float q_ref)
 {
-#if defined(CONFIG_MOTOR_DEBUG_ENCODERMODE) || defined(CONFIG_MOTOR_DEBUG_TORQUE_PID)
 	struct foc_data *f_data = dev->data;
 	f_data->id_ref = d_ref;
 	f_data->iq_ref = q_ref;
-#endif
 	return 0;
 }
 int foc_currloop_deinit(const struct device *dev)
@@ -78,8 +76,10 @@ int speedloop_init(const struct device *dev)
 		 TOQREMODE_Q_MAX_LIMIT, TOQREMODE_Q_MIN_LIMIT);
 	pid_init(&(f_data->speed_pid), SPEEDMODE_SPEED_KP, SPEEDMODE_SPEED_KI, SPEEDMODE_SPEED_KC,
 		 SPEEDMODE_SPEED_MAX_LIMIT, SPEEDMODE_SPEED_MIN_LIMIT);
+#if defined(CONFIG_SPEEDLOOP_S_SPEEDPLAN)
 	s_type_interpolation_init((void *)&f_data->s_speed_ph, SPEEDPLAN_MAX_A, SPEEDPLAN_MAX_JA,
 				  SPEEDPLAN_MIN_A, SPEEDPLAN_MIN_JA);
+#endif
 	return 0;
 }
 int speedloop_deinit(const struct device *dev)
@@ -94,8 +94,9 @@ int speedloop(const struct device *dev)
 {
 	struct foc_data *f_data = dev->data;
 	float cur_speed = f_data->speed_real;
-
+#if defined(CONFIG_SPEEDLOOP_S_SPEEDPLAN)
 	f_data->speed_ref = s_velocity_actory(&(f_data->s_speed_ph)) * 60.0F;
+#endif
 	f_data->id_ref = 0.0f;
 	f_data->iq_ref = pid_contrl(&f_data->speed_pid, f_data->speed_ref, cur_speed);
 	return 0;

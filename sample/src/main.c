@@ -24,15 +24,10 @@ LOG_MODULE_REGISTER(motor_sample);
 
 #define MOT12_BRK_PIN_NODE DT_NODELABEL(mot12_brk_pin)
 // #define ENCODER_VCC	   DT_NODELABEL(encoder_vcc)
-#define W_DOG		   DT_NODELABEL(wdog)
+#define W_DOG              DT_NODELABEL(wdog)
 extern void motor_set_vol(const struct device *motor, float *bus_vol);
 extern void motor_set_falutcode(const struct device *motor, enum motor_fault_code code);
 extern enum motor_fault_code motor_get_falutcode(const struct device *motor);
-// extern int tle5012_update(const struct device *dev);
-// extern int tle5012b_init(const struct device *dev);
-
-// int tle5012b_read(const struct device *dev);
-
 int main(void)
 {
 	const struct device *motor0 = DEVICE_DT_GET(DT_NODELABEL(motor0));
@@ -74,19 +69,15 @@ int main(void)
 	float bus_volcurur[2];
 	fmm_t *bus_vol_fmm = m_data->fault[0];
 	fmm_t *buf_curr_fmm = m_data->fault[1];
-	// motor_get_bus_voltage_current(motor0, &bus_volcurur[0], &bus_volcurur[1]);
 	fmm_init(bus_vol_fmm, 60.0f, 48.0f, 5, 5, NULL);
 	fmm_init(buf_curr_fmm, 5.0f, 0.0f, 5, 5, NULL);
 
 	static int16_t fault_fsm = 0;
 	static uint32_t conut = 0;
-	// const struct device *tle5012b_dev = DEVICE_DT_GET(DT_NODELABEL(tle5012b0));
-	// tle5012b_init(tle5012b_dev);
 	k_msleep(200);
 	while (1) {
 		if (conut++ > 500) {
 			conut = 0;
-			// tle5012b_read(tle5012b_dev);
 		}
 		motor_get_bus_voltage_current(motor0, &bus_volcurur[0], &bus_volcurur[1]);
 		motor_set_vol(motor0, bus_volcurur);

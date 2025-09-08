@@ -24,7 +24,14 @@ config FOC_INIT_PRIORITY
 	  Must be higher than PWM/current sampling devices.
 
 
-# 主调试模式开关
+# 调试说明：
+# MOTOR_DEBUG_MODE总开关,对电流环进行调试
+# 新电机的调试顺序：
+#	1、开启MOTOR_DEBUG_SELFLOOPMODE，电机自开环，校准编码器
+#	2、开启MOTOR_DEBUG_ENCODERMODE，验证相电流
+#	3、开启MOTOR_DEBUG_TORQUE_PID，调试电流环D轴PID
+#	4、开启SPEEDLOOP_DEBUG，调试速度环PID
+		# a.空载额定转速的0～50%～100%来进行调试
 config MOTOR_DEBUG_MODE
 	bool "Enable motor debug mode"
 	default n
@@ -48,4 +55,17 @@ config MOTOR_DEBUG_SELFLOOPMODE
 	bool "Self-loop debug mode"
 	help
 	  Use internal angle generator for debugging
+endchoice
+
+# 对速度环进行调试
+# 请确保MOTOR_DEBUG_MODE为关闭状态
+choice
+	prompt "Speed-loop algorithm"
+	default SPEEDLOOP_S_SPEEDPLAN
+
+config SPEEDLOOP_S_SPEEDPLAN
+	bool "S-curve speed planning"
+
+config SPEEDLOOP_DEBUG
+	bool "Debug speed mode (no S-planning)"
 endchoice

@@ -47,9 +47,13 @@ static int cmd_motor_set_closeloop(const struct shell *sh, size_t argc, char **a
 }
 static int cmd_motor_set_speed(const struct shell *sh, size_t argc, char **argv)
 {
-	ARG_UNUSED(argc);
-	ARG_UNUSED(argv);
-	motor_set_target_speed(motor, 0.2f);
+	if (argc != 2) {
+		shell_error(sh, "Usage: add <num1> <num2>");
+		return -EINVAL;
+	}
+	long temp = strtol(argv[1], NULL, 0);
+	float speed = (float)temp / 1000.0f;
+	motor_set_target_speed(motor, speed);
 	motor_set_state(motor, MOTOR_STATE_CLOSED_LOOP);
 	return 0;
 }

@@ -126,7 +126,7 @@ fsm_rt_t motor_runing_state(fsm_cb_t *obj)
 		} else if (m_data->mode == MOTOR_MODE_SPEED) {
 			speedloop(foc);
 		} else if (m_data->mode == MOTOR_MODE_TORQUE) {
-			foc_currloop(foc);
+			// foc_currloop(foc);
 		}
 
 		break;
