@@ -13,10 +13,13 @@
 
 #include <lib/foc/foc.h>
 #include <lib/foc/focutils.h>
+#include <lib/motor/motor_Parameter.h>
+
 #include "filter.h"
 #include "pid.h"
 #include "lib/foc/svm.h"
 #include "lib/foc/deadtime_comp.h"
+
 LOG_MODULE_REGISTER(foc, LOG_LEVEL_DBG);
 
 extern void modulation_manager_init(modulation_ctrl_t *ctrl, float max_modulation, float dead_time,
@@ -25,8 +28,10 @@ extern void modulation_manager_init(modulation_ctrl_t *ctrl, float max_modulatio
 int foc_currloop_init(const struct device *dev)
 {
 	struct foc_data *f_data = dev->data;
-	pid_init(&(f_data->id_pid), 0.08f, 0.006f, 0.5f, 12.0f, -12.0f);
-	pid_init(&(f_data->iq_pid), 0.08f, 0.006f, 0.5f, 12.0f, -12.0f);
+	pid_init(&(f_data->id_pid), TOQREMODE_D_KP, TOQREMODE_D_KI, TOQREMODE_D_KC,
+		 TOQREMODE_D_MAX_LIMIT, TOQREMODE_D_MIN_LIMIT);
+	pid_init(&(f_data->iq_pid), TOQREMODE_Q_KP, TOQREMODE_Q_KI, TOQREMODE_Q_KC,
+		 TOQREMODE_Q_MAX_LIMIT, TOQREMODE_Q_MIN_LIMIT);
 	f_data->id_ref = 0.0f;
 	f_data->iq_ref = 0.0f;
 	return 0;
@@ -51,10 +56,14 @@ int foc_currloop_deinit(const struct device *dev)
 int speedloop_init(const struct device *dev)
 {
 	struct foc_data *f_data = dev->data;
-	pid_init(&(f_data->id_pid), 0.08f, 0.006f, 0.5f, 12.0f, -12.0f);
-	pid_init(&(f_data->iq_pid), 0.08f, 0.006f, 0.5f, 12.0f, -12.0f);
-	pid_init(&(f_data->speed_pid), 0.0125f, 0.0083f, 0.5f, 48.0f, -48.0f);
-	s_type_interpolation_init((void *)&f_data->s_speed_ph, 100.00f, 300.00f, 0.00f, 0.00f);
+	pid_init(&(f_data->id_pid), TOQREMODE_D_KP, TOQREMODE_D_KI, TOQREMODE_D_KC,
+		 TOQREMODE_D_MAX_LIMIT, TOQREMODE_D_MIN_LIMIT);
+	pid_init(&(f_data->iq_pid), TOQREMODE_Q_KP, TOQREMODE_Q_KI, TOQREMODE_Q_KC,
+		 TOQREMODE_Q_MAX_LIMIT, TOQREMODE_Q_MIN_LIMIT);
+	pid_init(&(f_data->speed_pid), SPEEDMODE_SPEED_KP, SPEEDMODE_SPEED_KI, SPEEDMODE_SPEED_KC,
+		 SPEEDMODE_SPEED_MAX_LIMIT, SPEEDMODE_SPEED_MIN_LIMIT);
+	s_type_interpolation_init((void *)&f_data->s_speed_ph, SPEEDPLAN_MAX_A, SPEEDPLAN_MAX_JA,
+				  SPEEDPLAN_MIN_A, SPEEDPLAN_MIN_JA);
 	return 0;
 }
 int speedloop_deinit(const struct device *dev)
@@ -79,11 +88,15 @@ int posloop_init(const struct device *dev)
 {
 	struct foc_data *f_data = dev->data;
 	SPosPlanner *planner = &(f_data->s_pos_ph);
-	pid_init(&(f_data->id_pid), 0.08f, 0.006f, 0.5f, 12.0f, -12.0f);
-	pid_init(&(f_data->iq_pid), 0.08f, 0.006f, 0.5f, 12.0f, -12.0f);
-	pid_init(&(f_data->speed_pid), 0.0125f, 0.0083f, 0.5f, 48.0f, -48.0f);
-	pid_init(&(f_data->pos_pid), 10.0f, 0.0001f, 0.50f, POS_PID_LIMIT_MAX, -POS_PID_LIMIT_MAX);
-	s_pos_planner_init(planner, 1400.0f, 3000.0f, 15000.0f);
+	pid_init(&(f_data->id_pid), TOQREMODE_D_KP, TOQREMODE_D_KI, TOQREMODE_D_KC,
+		 TOQREMODE_D_MAX_LIMIT, TOQREMODE_D_MIN_LIMIT);
+	pid_init(&(f_data->iq_pid), TOQREMODE_Q_KP, TOQREMODE_Q_KI, TOQREMODE_Q_KC,
+		 TOQREMODE_Q_MAX_LIMIT, TOQREMODE_Q_MIN_LIMIT);
+	pid_init(&(f_data->speed_pid), SPEEDMODE_SPEED_KP, SPEEDMODE_SPEED_KI, SPEEDMODE_SPEED_KC,
+		 SPEEDMODE_SPEED_MAX_LIMIT, SPEEDMODE_SPEED_MIN_LIMIT);
+	pid_init(&(f_data->pos_pid), POSMODE_POS_KP, POSMODE_POS_KI, POSMODE_POS_KC,
+		 POSMODE_POS_MAX_LIMIT, POSMODE_POS_MIN_LIMIT);
+	s_pos_planner_init(planner, POSPLAN_MAX_SPEED, POSPLAN_MAX_ACC, POSPLAN_MAX_JACC);
 	return 0;
 }
 int posloop(const struct device *dev)
