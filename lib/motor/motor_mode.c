@@ -50,6 +50,7 @@ fsm_rt_t motor_torque_control_mode(fsm_cb_t *obj)
 	switch (obj->chState) {
 	case ENTER:
 		m_data->mode = MOTOR_MODE_TORQUE;
+		statemachine_init(obj->sub_state_machine, NULL, motor_init_state, obj->p1, NULL, 0);
 		obj->chState = RUNING;
 		break;
 	case RUNING:

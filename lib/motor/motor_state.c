@@ -92,6 +92,8 @@ fsm_rt_t motor_ready_state(fsm_cb_t *obj)
 			posloop_init(foc);
 		} else if (m_data->mode == MOTOR_MODE_SPEED) {
 			speedloop_init(foc);
+		} else if (m_data->mode == MOTOR_MODE_TORQUE) {
+			foc_currloop_init(foc);
 		}
 		svpwm_enable_threephase_channle(svpwm);
 		obj->chState = RUNING;
@@ -123,6 +125,8 @@ fsm_rt_t motor_runing_state(fsm_cb_t *obj)
 			posloop(foc);
 		} else if (m_data->mode == MOTOR_MODE_SPEED) {
 			speedloop(foc);
+		} else if (m_data->mode == MOTOR_MODE_TORQUE) {
+			foc_currloop(foc);
 		}
 
 		break;

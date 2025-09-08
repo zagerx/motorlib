@@ -212,6 +212,12 @@ void motor_get_bus_voltage_current(const struct device *motor, float *bus_vol, f
 	struct device *currsmp = (struct device *)cfg->currsmp;
 	currsmp_get_bus_voltage_current(currsmp, bus_vol, bus_curr);
 }
+
+void motor_set_torque(const struct device *motor, float id_ref, float iq_ref)
+{
+	struct motor_data *mdata = motor->data;
+	foc_currloop_update_idq_Ref(mdata->foc_dev, id_ref, iq_ref);
+}
 /**
  * @brief Motor device initialization
 

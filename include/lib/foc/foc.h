@@ -96,6 +96,11 @@ int posloop_deinit(const struct device *dev);
 int speedloop_init(const struct device *dev);
 int speedloop_deinit(const struct device *dev);
 int speedloop(const struct device *dev);
+int foc_currloop(const struct device *dev);
+int foc_currloop_init(const struct device *dev);
+int foc_currloop_deinit(const struct device *dev);
+int foc_currloop_update_idq_Ref(const struct device *dev, float d_ref, float q_ref);
+
 int foc_init(const struct device *dev);
 
 void svm_apply_voltage_limiting(const struct device *dev, float *vd, float *vq, float Vdc);

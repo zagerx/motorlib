@@ -65,9 +65,25 @@ static int cmd_motor_set_mode(const struct shell *sh, size_t argc, char **argv)
 		motor_set_mode(motor, MOTOR_MODE_SPEED);
 	} else if (mode == 2) {
 		motor_set_mode(motor, MOTOR_MODE_POSI);
+	} else if (mode == 3) {
+		motor_set_mode(motor, MOTOR_MODE_TORQUE);
 	} else if (mode == 5) {
 		motor_set_mode(motor, MOTOR_MODE_IDLE);
 	}
+	return 0;
+}
+static int cmd_motor_set_toque(const struct shell *sh, size_t argc, char **argv)
+{
+	if (argc != 3) {
+		shell_error(sh, "Usage: add <num1> <num2>");
+		return -EINVAL;
+	}
+	long d_ref = strtol(argv[1], NULL, 0);
+	long q_ref = strtol(argv[2], NULL, 0);
+	float d_ref_float = (float)d_ref / 1000.0f;
+	float q_ref_float = (float)q_ref / 1000.0f;
+	motor_set_torque(motor, d_ref_float, q_ref_float);
+	motor_set_state(motor, MOTOR_STATE_CLOSED_LOOP);
 	return 0;
 }
 
@@ -95,3 +111,4 @@ SHELL_CMD_REGISTER(c, NULL, "Motor Set Close", cmd_motor_set_closeloop);
 SHELL_CMD_REGISTER(speed, NULL, "Motor Set Speed", cmd_motor_set_speed);
 SHELL_CMD_REGISTER(s, NULL, "Motor Set Stop", cmd_motor_set_disable);
 SHELL_CMD_REGISTER(p, NULL, "Motor Set Posi", cmd_motor_set_posi);
+SHELL_CMD_REGISTER(t, NULL, "Motor Set Toque", cmd_motor_set_toque);
