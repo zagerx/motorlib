@@ -8,6 +8,7 @@
 #include <stdint.h>
 #include <zephyr/kernel.h>
 #include "fault_monitoring_module.h"
+#include "lib/foc/foc.h"
 #include "statemachine.h"
 #include "zephyr/device.h"
 #include <zephyr/drivers/gpio.h>
@@ -73,6 +74,7 @@ int main(void)
 	float bus_volcurur[2];
 	fmm_t *bus_vol_fmm = m_data->fault[0];
 	fmm_t *buf_curr_fmm = m_data->fault[1];
+	// motor_get_bus_voltage_current(motor0, &bus_volcurur[0], &bus_volcurur[1]);
 	fmm_init(bus_vol_fmm, 60.0f, 48.0f, 5, 5, NULL);
 	fmm_init(buf_curr_fmm, 5.0f, 0.0f, 5, 5, NULL);
 
@@ -89,33 +91,33 @@ int main(void)
 		motor_get_bus_voltage_current(motor0, &bus_volcurur[0], &bus_volcurur[1]);
 		motor_set_vol(motor0, bus_volcurur);
 
-		fmm_monitoring(bus_vol_fmm, bus_volcurur[0]);
-		fmm_monitoring(buf_curr_fmm, bus_volcurur[1]);
+		// fmm_monitoring(bus_vol_fmm, bus_volcurur[0]);
+		// fmm_monitoring(buf_curr_fmm, bus_volcurur[1]);
 
-		switch (fault_fsm) {
-		case 1:
-			if (fmm_readstatus(bus_vol_fmm) == FMM_NORMAL &&
-			    fmm_readstatus(buf_curr_fmm) == FMM_NORMAL) { // 判断是否恢复
-				fault_fsm = 0;
-				motor_set_falutcode(motor0, MOTOR_FAULTCODE_NOERR);
-				motor_set_state(motor0, MOTOR_STATE_IDLE);
-			}
-			break;
-		case 0: // 判断是否有故障
-			if (fmm_readstatus(bus_vol_fmm) == FMM_FAULT) {
-				fault_fsm = 1;
-				motor_set_falutcode(motor0, MOTOR_FAULTCODE_UNDERVOL);
-				motor_set_state(motor0, MOTOR_STATE_FAULT);
-			} else if (fmm_readstatus(buf_curr_fmm) == FMM_FAULT) {
-				fault_fsm = 1;
-				motor_set_falutcode(motor0, MOTOR_FAULTCODE_OVERCURRMENT);
-				motor_set_state(motor0, MOTOR_STATE_FAULT);
-			} else {
-			}
-			break;
-		default:
-			break;
-		}
+		// switch (fault_fsm) {
+		// case 1:
+		// 	if (fmm_readstatus(bus_vol_fmm) == FMM_NORMAL &&
+		// 	    fmm_readstatus(buf_curr_fmm) == FMM_NORMAL) { // 判断是否恢复
+		// 		fault_fsm = 0;
+		// 		motor_set_falutcode(motor0, MOTOR_FAULTCODE_NOERR);
+		// 		motor_set_state(motor0, MOTOR_STATE_IDLE);
+		// 	}
+		// 	break;
+		// case 0: // 判断是否有故障
+		// 	if (fmm_readstatus(bus_vol_fmm) == FMM_FAULT) {
+		// 		fault_fsm = 1;
+		// 		motor_set_falutcode(motor0, MOTOR_FAULTCODE_UNDERVOL);
+		// 		motor_set_state(motor0, MOTOR_STATE_FAULT);
+		// 	} else if (fmm_readstatus(buf_curr_fmm) == FMM_FAULT) {
+		// 		fault_fsm = 1;
+		// 		motor_set_falutcode(motor0, MOTOR_FAULTCODE_OVERCURRMENT);
+		// 		motor_set_state(motor0, MOTOR_STATE_FAULT);
+		// 	} else {
+		// 	}
+		// 	break;
+		// default:
+		// 	break;
+		// }
 
 		DISPATCH_FSM(m_data->mode_state_mec);
 		gpio_pin_toggle_dt(&w_dog);

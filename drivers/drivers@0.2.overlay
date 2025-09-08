@@ -4,7 +4,7 @@
 	motors {
 		motor0: motor_0 {
 			compatible = "motor-bldc";
-			feedback = <&super_400w_lun0>;
+			feedback = <&tle5012b0>;
 			currsmp  = <&currsmp0>;
 			pwm      = <&pwm1>;
 			status   = "okay";

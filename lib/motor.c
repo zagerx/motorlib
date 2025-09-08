@@ -85,22 +85,30 @@ static void foc_curr_regulator(void *ctx)
 	float d_out, q_out;
 	if (motor_get_state(dev) == MOTOR_STATE_CLOSED_LOOP) {
 #if CONFIG_MOTOR_DEBUG_MODE
-#if CONFIG_MOTOR_DEBUG_ENCODERMODE
-		d_out = 0.0f;
-		q_out = MOTOR_DEBUG_IQ;
-		sin_cos_f32(((data->eangle)), &sin_the, &cos_the);
+#if defined(CONFIG_MOTOR_DEBUG_ENCODERMODE)
+		d_out = data->id_ref;
+		q_out = data->iq_ref;
+		sin_cos_f32(data->eangle, &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
-#else
+#elif defined(CONFIG_MOTOR_DEBUG_SELFLOOPMODE)
 		static float debug_eangle = 0.0f;
 		d_out = 0.0f;
 		q_out = MOTOR_DEBUG_IQ;
+
 		if (debug_eangle > 360.0f) {
 			debug_eangle = 0.0f;
 		} else {
 			debug_eangle += MOTOR_DEBUG_SELFANGLE;
 		}
-		sin_cos_f32(((debug_eangle)), &sin_the, &cos_the);
+		sin_cos_f32(debug_eangle, &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
+#elif defined(CONFIG_MOTOR_DEBUG_TORQUE_PID)
+		d_out = pid_contrl((pid_cb_t *)(&data->id_pid), data->id_ref, data->i_d);
+		svm_apply_voltage_limiting(foc, &d_out, &q_out, data->bus_vol);
+		sin_cos_f32(((data->eangle)), &sin_the, &cos_the);
+		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
+#else
+#error "No valid debug mode selected!"
 #endif
 #else
 		d_out = pid_contrl((pid_cb_t *)(&data->id_pid), 0.0f, data->i_d);

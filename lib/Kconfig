@@ -24,14 +24,28 @@ config FOC_INIT_PRIORITY
 	  Must be higher than PWM/current sampling devices.
 
 
+# 主调试模式开关
 config MOTOR_DEBUG_MODE
-	bool "DEBUG mode"
-	default n 
+	bool "Enable motor debug mode"
+	default n
 	help
-	  Temp test mode
-config MOTOR_DEBUG_ENCODERMODE
-	bool "DEBUG mode"
-	default n 
+	  Enable motor debug mode for testing purposes
+
+choice
+	prompt "Debug mode selection"
 	depends on MOTOR_DEBUG_MODE
+	default MOTOR_DEBUG_SELFLOOPMODE
+	
+config MOTOR_DEBUG_ENCODERMODE
+	bool "Encoder debug mode"
 	help
-	  Temp test mode
+	  Use encoder angle for debugging
+config MOTOR_DEBUG_TORQUE_PID
+	bool "Self-loop debug mode"
+	help
+	  Use internal angle generator for debugging	
+config MOTOR_DEBUG_SELFLOOPMODE
+	bool "Self-loop debug mode"
+	help
+	  Use internal angle generator for debugging
+endchoice

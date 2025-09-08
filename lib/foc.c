@@ -39,10 +39,12 @@ int foc_currloop_init(const struct device *dev)
 }
 int foc_currloop(const struct device *dev)
 {
+
+#if defined(CONFIG_MOTOR_DEBUG_ENCODERMODE) || defined(CONFIG_MOTOR_DEBUG_TORQUE_PID)
+
+#else
 	struct foc_data *f_data = dev->data;
 	float cur_iq = f_data->i_q;
-#if defined(CONFIG_MOTOR_DEBUG_ENCODERMODE)
-#else
 	f_data->id_ref = 0.0f;
 	f_data->iq_ref = pid_contrl(&f_data->iq_pid, f_data->iq_ref, cur_iq);
 #endif
@@ -51,7 +53,7 @@ int foc_currloop(const struct device *dev)
 }
 int foc_currloop_update_idq_Ref(const struct device *dev, float d_ref, float q_ref)
 {
-#if defined(CONFIG_MOTOR_DEBUG_ENCODERMODE)
+#if defined(CONFIG_MOTOR_DEBUG_ENCODERMODE) || defined(CONFIG_MOTOR_DEBUG_TORQUE_PID)
 	struct foc_data *f_data = dev->data;
 	f_data->id_ref = d_ref;
 	f_data->iq_ref = q_ref;

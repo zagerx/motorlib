@@ -49,7 +49,7 @@ static int cmd_motor_set_speed(const struct shell *sh, size_t argc, char **argv)
 {
 	ARG_UNUSED(argc);
 	ARG_UNUSED(argv);
-	motor_set_target_speed(motor, 2.5f);
+	motor_set_target_speed(motor, 0.2f);
 	motor_set_state(motor, MOTOR_STATE_CLOSED_LOOP);
 	return 0;
 }

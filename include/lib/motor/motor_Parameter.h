@@ -59,23 +59,23 @@
 #define MOTOR_DEBUG_IQ	      (0.02f)
 #define MOTOR_DEBUG_SELFANGLE (0.008f)
 
-#define TOQREMODE_D_KP	      (0.08f)
-#define TOQREMODE_D_KI	      (0.006f)
+#define TOQREMODE_D_KP	      (0.4f)
+#define TOQREMODE_D_KI	      (0.08f)
 #define TOQREMODE_D_KC	      (0.5f)
 #define TOQREMODE_D_MAX_LIMIT (12.0f)
 #define TOQREMODE_D_MIN_LIMIT (-TOQREMODE_D_MAX_LIMIT)
 
-#define TOQREMODE_Q_KP	      (0.08f)
-#define TOQREMODE_Q_KI	      (0.006f)
+#define TOQREMODE_Q_KP	      (0.4f)
+#define TOQREMODE_Q_KI	      (0.08f)
 #define TOQREMODE_Q_KC	      (0.5f)
 #define TOQREMODE_Q_MAX_LIMIT (12.0f)
 #define TOQREMODE_Q_MIN_LIMIT (-TOQREMODE_Q_MAX_LIMIT)
 
-#define SPEEDMODE_SPEED_KP	  (0.0125f)
-#define SPEEDMODE_SPEED_KI	  (0.0083f)
+#define SPEEDMODE_SPEED_KP	  (0.001f)  // TODO
+#define SPEEDMODE_SPEED_KI	  (0.0001f) // TODO
 #define SPEEDMODE_SPEED_KC	  (0.5f)
 #define SPEEDMODE_SPEED_MAX_LIMIT (48.0f)
-#define SPEEDMODE_SPEED_MIN_LIMIT (-TOQREMODE_D_MAX_LIMIT)
+#define SPEEDMODE_SPEED_MIN_LIMIT (-SPEEDMODE_SPEED_MAX_LIMIT)
 
 #define SPEEDPLAN_MAX_A	 (100.00f)
 #define SPEEDPLAN_MIN_A	 (0.0f)

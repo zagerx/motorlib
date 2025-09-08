@@ -1,10 +1,12 @@
 #include <math.h>
+#include <sys/_stdint.h>
 #include <zephyr/kernel.h>
 #include <zephyr/device.h>
 #include <zephyr/drivers/spi.h>
 #include <zephyr/drivers/gpio.h>
 
 #include "drivers/feedback.h"
+#include "filter.h"
 #include "lib/motor/motor_Parameter.h"
 #include "amplitude_limiting_filter.h"
 #include "zephyr/sys/printk.h"
@@ -147,13 +149,16 @@ struct feedback_data {
 	float offset;
 	short calibration_state;
 	AmplitudeLimitingFilter filter;
+	lowfilter_t speedfilter;
 	uint16_t raw;
+	uint16_t last_raw;
 };
 
 static int tle5012b_init(const struct device *dev)
 {
 	MX_SPI3_Init();
-	// struct feedback_data *data = dev->data;
+	struct feedback_data *data = dev->data;
+	lowfilter_init(&data->speedfilter, 10.0f);
 	return 0;
 }
 static uint16_t tle5012b_read(const struct device *dev)
@@ -179,7 +184,13 @@ static float feedback_cacle_eangle(const struct device *dev)
 }
 static float feedback_cacle_eomega(const struct device *dev)
 {
-	return 0.0f;
+
+	struct feedback_data *data = dev->data;
+	int16_t delat = 0;
+	delat = data->raw - data->last_raw;
+	data->last_raw = data->raw;
+	float omega = (delat * 6.28f) / 32768.0f / 0.0001f;
+	return lowfilter_cale(&data->speedfilter, omega);
 }
 static float feedback_cacle_odom(const struct device *dev)
 {
@@ -191,6 +202,7 @@ static int feedback_calibration_firstangle(const struct device *dev)
 	struct feedback_data *data = dev->data;
 	data->offset = 115.0f; //_normalize_angle((raw * 360.0f) / 32768.0f * MOTOR_PAIRS);
 	data->calibration_state = 1;
+	data->last_raw = data->offset;
 	filter_init(&data->filter, 10000, 0, 32768, raw);
 	return 0;
 }
