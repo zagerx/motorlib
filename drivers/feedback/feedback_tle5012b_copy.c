@@ -148,7 +148,7 @@ struct feedback_data {
 
 	float offset;
 	short calibration_state;
-	AmplitudeLimitingFilter filter;
+	// AmplitudeLimitingFilter filter;
 	lowfilter_t speedfilter;
 	uint16_t raw;
 	uint16_t last_raw;
@@ -173,7 +173,7 @@ static float feedback_cacle_eangle(const struct device *dev)
 {
 	struct feedback_data *data = dev->data;
 	int32_t raw = tle5012b_read(dev) - 32768;
-	raw = amplitude_limiting_filter(&data->filter, raw);
+	// raw = amplitude_limiting_filter(&data->filter, raw);
 	data->raw = raw;
 	if (!data->calibration_state) {
 		return 0.0f;
@@ -182,14 +182,20 @@ static float feedback_cacle_eangle(const struct device *dev)
 		_normalize_angle((raw * 360.0f) / 32768.0f * MOTOR_PAIRS - data->offset + 90.0f);
 	return data->eangle;
 }
+#define CALC_DELTA(old_val, new_val)                                                               \
+	({                                                                                         \
+		int16_t _diff = (int16_t)((new_val) - (old_val));                                  \
+		(_diff > 16384) ? (_diff - 32768) : ((_diff < -16384) ? (_diff + 32768) : _diff);  \
+	})
 static float feedback_cacle_eomega(const struct device *dev)
 {
 
 	struct feedback_data *data = dev->data;
-	int16_t delat = 0;
-	delat = data->raw - data->last_raw;
+	int16_t delta = 0;
+	delta = CALC_DELTA(data->last_raw, data->raw);
 	data->last_raw = data->raw;
-	float omega = (delat * 6.28f) / 32768.0f / 0.0001f;
+	// float omega = (delat * 6.28f) / 32768.0f / 0.0001f;
+	float omega = (float)delta * (20000.0f * (float)M_PI / 32768.0f);
 	return lowfilter_cale(&data->speedfilter, omega);
 }
 static float feedback_cacle_odom(const struct device *dev)
@@ -203,7 +209,7 @@ static int feedback_calibration_firstangle(const struct device *dev)
 	data->offset = 115.0f; //_normalize_angle((raw * 360.0f) / 32768.0f * MOTOR_PAIRS);
 	data->calibration_state = 1;
 	data->last_raw = data->offset;
-	filter_init(&data->filter, 10000, 0, 32768, raw);
+	// filter_init(&data->filter, 10000, 0, 32768, raw);
 	return 0;
 }
 static short feedback_read_calibration_state(const struct device *dev)

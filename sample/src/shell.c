@@ -138,6 +138,7 @@ static int cmd_motor_get_modestate(const struct shell *sh, size_t argc, char **a
 			shell_print(sh, "motor_position_control_mode");
 		}
 	}
+	return 0;
 }
 SHELL_CMD_REGISTER(hello, NULL, "Print hello", cmd_hello);
 SHELL_CMD_REGISTER(mode, NULL, "Motor Set Mode", cmd_motor_set_mode);
