@@ -59,9 +59,11 @@
 当前参数版本:速度最大到200rpm
 shell窗口最大输入 speed 18000
  */
-#define MOTOR_PAIRS	      (15.0f)
-#define MOTOR_DEBUG_IQ	      (0.02f)
-#define MOTOR_DEBUG_SELFANGLE (0.008f)
+#define MOTOR_PAIRS		     (15.0f)
+#define MOTOR_DEBUG_IQ		     (0.02f)
+#define MOTOR_DEBUG_SELFANGLE	     (0.008f)
+// #define MOTOR_ABSENCODER_TYPE_OFFSET (115.0f)
+#define MOTOR_ABSENCODER_TYPE_OFFSET (115.0f - 90)
 
 #define TOQREMODE_D_KP	      (0.4f)
 #define TOQREMODE_D_KI	      (0.08f)

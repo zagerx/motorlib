@@ -8,15 +8,27 @@
 #include "zephyr/device.h"
 #include <lib/foc/svm.h>
 #include <pid.h>
+#include <sys/_stdint.h>
 #include <sys/types.h>
 #include <filter.h>
 #include <lib/foc/deadtime_comp.h>
 #include <s_posi_planning.h>
 #include <s_trajectory_planning.h>
+
+#if defined(CONFIG_MOTOR_DEBUG_SELFLOOPMODE)
+struct self_loop_data {
+	float self_eangle;
+	float offset_sum;
+	float offset;
+	uint16_t self_count;
+	uint16_t alighFlag;
+};
+#endif
+
 // 调制比控制结构体
 typedef struct {
 	float max_modulation; // 最大允许调制比 (0.95~1.15)
-	float fsw;            // 开关频率 (Hz)
+	float fsw;	      // 开关频率 (Hz)
 	float dead_time;      // 死区时间 (秒)
 	bool overmodulation;  // 过调制标志
 } modulation_ctrl_t;
@@ -41,12 +53,16 @@ struct foc_data {
 	float i_a, i_b, i_c;
 	float i_alpha;
 	float i_beta;
-	float i_d, i_q;               /* D/Q axis currents */
-	float rads;                   /* Rotor speed (rad/s) */
-	float angle;                  /* Mechanical angle */
-	float eangle;                 /* Electrical angle */
+	float i_d, i_q;		      /* D/Q axis currents */
+	float rads;		      /* Rotor speed (rad/s) */
+	float angle;		      /* Mechanical angle */
+	float eangle;		      /* Electrical angle */
 	float sin_eangle, cos_eangle; /* sin/cos of electrical angle */
-	float v_q, v_d;               /* Q/D axis voltages */
+	float v_q, v_d;		      /* Q/D axis voltages */
+
+#if defined(CONFIG_MOTOR_DEBUG_SELFLOOPMODE)
+	struct self_loop_data self_data;
+#endif
 };
 
 // struct foc_config {
@@ -109,6 +125,7 @@ int foc_currloop_deinit(const struct device *dev);
 int foc_currloop_update_idq_Ref(const struct device *dev, float d_ref, float q_ref);
 
 int foc_init(const struct device *dev);
+float foc_self_openloop(const struct device *dev, float curr_eangle);
 
 void svm_apply_voltage_limiting(const struct device *dev, float *vd, float *vq, float Vdc);
 

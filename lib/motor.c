@@ -91,15 +91,11 @@ static void foc_curr_regulator(void *ctx)
 		sin_cos_f32(data->eangle, &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
 #elif defined(CONFIG_MOTOR_DEBUG_SELFLOOPMODE)
-		static float debug_eangle = 0.0f;
+		float debug_eangle = 0.0f;
 		d_out = 0.0f;
 		q_out = MOTOR_DEBUG_IQ;
-
-		if (debug_eangle > 360.0f) {
-			debug_eangle = 0.0f;
-		} else {
-			debug_eangle += MOTOR_DEBUG_SELFANGLE;
-		}
+		debug_eangle = foc_self_openloop(foc, data->eangle);
+		// debug_eangle = data->self_data.self_eangle;
 		sin_cos_f32(debug_eangle, &sin_the, &cos_the);
 		inv_park_f32(d_out, q_out, &alph, &beta, sin_the, cos_the);
 #elif defined(CONFIG_MOTOR_DEBUG_TORQUE_PID)

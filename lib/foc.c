@@ -151,4 +151,34 @@ int foc_init(const struct device *dev)
 	return 0;
 }
 
+#if defined(CONFIG_MOTOR_DEBUG_SELFLOOPMODE)
+float foc_self_openloop(const struct device *dev, float curr_eangle)
+{
+	struct foc_data *data = dev->data;
+	if (!data->self_data.alighFlag) {
+		if (data->self_data.self_count++ >= 20000) {
+			data->self_data.alighFlag = 1;
+			data->self_data.self_count = 0;
+		}
+		return 0.0f;
+	}
+#if defined(CONFIG_ABS_TYPE_ENCODER_CALIBRA)
+	if (data->self_data.self_eangle > 360.0f) {
+		data->self_data.self_eangle = 0.0f;
+		data->self_data.self_count++;
+		data->self_data.offset_sum += curr_eangle;
+		data->self_data.offset = data->self_data.offset_sum / data->self_data.self_count;
+	} else {
+		data->self_data.self_eangle += MOTOR_DEBUG_SELFANGLE;
+	}
+#else
+	if (data->self_data.self_eangle > 360.0f) {
+		data->self_data.self_eangle = 0.0f;
+	} else {
+		data->self_data.self_eangle += MOTOR_DEBUG_SELFANGLE;
+	}
+#endif
+	return data->self_data.self_eangle;
+}
+#endif
 /* Device instance macro */

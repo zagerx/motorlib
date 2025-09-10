@@ -173,13 +173,11 @@ static float feedback_cacle_eangle(const struct device *dev)
 {
 	struct feedback_data *data = dev->data;
 	int32_t raw = tle5012b_read(dev) - 32768;
-	// raw = amplitude_limiting_filter(&data->filter, raw);
 	data->raw = raw;
 	if (!data->calibration_state) {
 		return 0.0f;
 	}
-	data->eangle =
-		_normalize_angle((raw * 360.0f) / 32768.0f * MOTOR_PAIRS - data->offset + 90.0f);
+	data->eangle = _normalize_angle((raw * 360.0f) / 32768.0f * MOTOR_PAIRS - data->offset);
 	return data->eangle;
 }
 #define CALC_DELTA(old_val, new_val)                                                               \
@@ -189,7 +187,6 @@ static float feedback_cacle_eangle(const struct device *dev)
 	})
 static float feedback_cacle_eomega(const struct device *dev)
 {
-
 	struct feedback_data *data = dev->data;
 	int16_t delta = 0;
 	delta = CALC_DELTA(data->last_raw, data->raw);
@@ -204,12 +201,14 @@ static float feedback_cacle_odom(const struct device *dev)
 }
 static int feedback_calibration_firstangle(const struct device *dev)
 {
-	int32_t raw = tle5012b_read(dev) - 32768;
 	struct feedback_data *data = dev->data;
-	data->offset = 115.0f; //_normalize_angle((raw * 360.0f) / 32768.0f * MOTOR_PAIRS);
+#if defined(CONFIG_ABS_TYPE_ENCODER_CALIBRA)
+	data->offset = 0.0f;
+#else
+	data->offset = MOTOR_ABSENCODER_TYPE_OFFSET;
+#endif
 	data->calibration_state = 1;
 	data->last_raw = data->offset;
-	// filter_init(&data->filter, 10000, 0, 32768, raw);
 	return 0;
 }
 static short feedback_read_calibration_state(const struct device *dev)
