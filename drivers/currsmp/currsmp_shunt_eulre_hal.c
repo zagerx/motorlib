@@ -59,6 +59,81 @@ static int currsmp_shunt_stm32_init(const struct device *dev)
 		return ret;
 	}
 
+	LL_ADC_SetOverSamplingScope(cfg->adc, LL_ADC_OVS_DISABLE);
+
+	LL_ADC_InitTypeDef ADC_InitStruct = {0};
+	ADC_InitStruct.Resolution = LL_ADC_RESOLUTION_12B;
+	ADC_InitStruct.LowPowerMode = LL_ADC_LP_MODE_NONE;
+	LL_ADC_Init(cfg->adc, &ADC_InitStruct);
+
+	LL_ADC_REG_InitTypeDef ADC_REG_InitStruct = {0};
+	ADC_REG_InitStruct.TriggerSource = LL_ADC_REG_TRIG_SOFTWARE;
+	ADC_REG_InitStruct.SequencerLength = LL_ADC_REG_SEQ_SCAN_ENABLE_2RANKS;
+	ADC_REG_InitStruct.SequencerDiscont = DISABLE;
+	ADC_REG_InitStruct.ContinuousMode = LL_ADC_REG_CONV_SINGLE;
+	ADC_REG_InitStruct.Overrun = LL_ADC_REG_OVR_DATA_PRESERVED;
+	LL_ADC_REG_Init(cfg->adc, &ADC_REG_InitStruct);
+
+	LL_ADC_CommonInitTypeDef ADC_CommonInitStruct = {0};
+	ADC_CommonInitStruct.CommonClock = LL_ADC_CLOCK_ASYNC_DIV4;
+	ADC_CommonInitStruct.Multimode = LL_ADC_MULTI_DUAL_INJ_SIMULT;
+	LL_ADC_CommonInit(__LL_ADC_COMMON_INSTANCE(cfg->adc), &ADC_CommonInitStruct);
+
+	LL_ADC_INJ_InitTypeDef ADC_INJ_InitStruct = {0};
+	ADC_INJ_InitStruct.TriggerSource = LL_ADC_INJ_TRIG_EXT_TIM1_CH4;
+	ADC_INJ_InitStruct.SequencerLength = LL_ADC_INJ_SEQ_SCAN_ENABLE_3RANKS;
+	ADC_INJ_InitStruct.SequencerDiscont = LL_ADC_INJ_SEQ_DISCONT_DISABLE;
+	ADC_INJ_InitStruct.TrigAuto = LL_ADC_INJ_TRIG_INDEPENDENT;
+	LL_ADC_INJ_Init(cfg->adc, &ADC_INJ_InitStruct);
+
+	LL_ADC_INJ_SetQueueMode(cfg->adc, LL_ADC_INJ_QUEUE_DISABLE);
+	LL_ADC_INJ_SetTriggerEdge(cfg->adc, LL_ADC_INJ_TRIG_EXT_FALLING);
+
+	LL_ADC_SetOverSamplingScope(cfg->adc, LL_ADC_OVS_DISABLE);
+	LL_ADC_DisableDeepPowerDown(cfg->adc);
+	LL_ADC_EnableInternalRegulator(cfg->adc);
+
+	__IO uint32_t wait_loop_index;
+	wait_loop_index =
+		((LL_ADC_DELAY_INTERNAL_REGUL_STAB_US * (SystemCoreClock / (100000 * 2))) / 10);
+	while (wait_loop_index != 0) {
+		wait_loop_index--;
+	}
+
+	LL_ADC_REG_SetSequencerRanks(cfg->adc, LL_ADC_REG_RANK_1, LL_ADC_CHANNEL_15);
+	LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_15, LL_ADC_SAMPLINGTIME_1CYCLE_5);
+	LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_15, LL_ADC_SINGLE_ENDED);
+	LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_15);
+	LL_ADC_REG_SetSequencerRanks(cfg->adc, LL_ADC_REG_RANK_2, LL_ADC_CHANNEL_4);
+	LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_4, LL_ADC_SAMPLINGTIME_1CYCLE_5);
+	LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_4, LL_ADC_SINGLE_ENDED);
+	LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_4);
+
+	LL_ADC_INJ_SetSequencerRanks(cfg->adc, LL_ADC_INJ_RANK_1, LL_ADC_CHANNEL_14);
+	LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_14, LL_ADC_SAMPLINGTIME_1CYCLE_5);
+	LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_14, LL_ADC_SINGLE_ENDED);
+	LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_14); /* W1----TP1809 */
+	LL_ADC_INJ_SetSequencerRanks(cfg->adc, LL_ADC_INJ_RANK_2, LL_ADC_CHANNEL_16);
+	LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_16, LL_ADC_SAMPLINGTIME_1CYCLE_5);
+	LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_16, LL_ADC_SINGLE_ENDED);
+	LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_16); /* U1----TP1805 */
+	LL_ADC_INJ_SetSequencerRanks(cfg->adc, LL_ADC_INJ_RANK_3, LL_ADC_CHANNEL_17);
+	LL_ADC_SetChannelSamplingTime(cfg->adc, LL_ADC_CHANNEL_17, LL_ADC_SAMPLINGTIME_1CYCLE_5);
+	LL_ADC_SetChannelSingleDiff(cfg->adc, LL_ADC_CHANNEL_17, LL_ADC_SINGLE_ENDED);
+	LL_ADC_SetChannelPreselection(cfg->adc, LL_ADC_CHANNEL_17); /* V1----TP1808 */
+
+	if (cfg->irq_cfg_func != NULL) {
+		cfg->irq_cfg_func();
+	}
+	LL_ADC_Disable(cfg->adc);
+	LL_ADC_StartCalibration(cfg->adc, LL_ADC_CALIB_OFFSET, LL_ADC_SINGLE_ENDED);
+	while (LL_ADC_IsCalibrationOnGoing(cfg->adc))
+		;
+	LL_ADC_Enable(cfg->adc);
+	while (LL_ADC_IsActiveFlag_ADRDY(cfg->adc) == 0)
+		;
+	LL_ADC_EnableIT_JEOS(cfg->adc);
+	LL_ADC_INJ_StartConversion(cfg->adc);
 	return 0;
 }
 

@@ -163,11 +163,13 @@ float foc_self_openloop(const struct device *dev, float curr_eangle)
 		return 0.0f;
 	}
 #if defined(CONFIG_ABS_TYPE_ENCODER_CALIBRA)
-	if (data->self_data.self_eangle > 360.0f) {
-		data->self_data.self_eangle = 0.0f;
+	if (data->self_data.self_eangle == 0.0f) {
 		data->self_data.self_count++;
 		data->self_data.offset_sum += curr_eangle;
 		data->self_data.offset = data->self_data.offset_sum / data->self_data.self_count;
+	}
+	if (data->self_data.self_eangle > 360.0f) {
+		data->self_data.self_eangle = 0.0f;
 	} else {
 		data->self_data.self_eangle += MOTOR_DEBUG_SELFANGLE;
 	}
